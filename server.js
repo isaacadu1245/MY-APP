@@ -1,7 +1,7 @@
 // server.js
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // This line imports the cors middleware
+const cors = require('cors');
 const fetch = require('node-fetch');
 
 const app = express();
@@ -11,14 +11,18 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// --- THIS IS THE SECTION YOU NEED TO UPDATE ---
-// Replace the domain below with your live website URL
+// CORS configuration to allow your Render site to communicate with the Vercel server
 const corsOptions = {
     origin: 'https://purchase-data-bundle.onrender.com', 
-    optionsSuccessStatus: 200
+    optionsSuccessStatus: 200,
+    methods: ['GET', 'POST', 'OPTIONS'], // Allow these methods
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 };
+
 app.use(cors(corsOptions));
-// --- END OF THE SECTION TO UPDATE ---
+
+// This explicitly handles the CORS preflight OPTIONS request
+app.options('/process-payment', cors(corsOptions));
 
 // A simple endpoint to test if the server is working
 app.get('/', (req, res) => {
@@ -36,7 +40,6 @@ app.post('/process-payment', async (req, res) => {
         'Payment Method': paymentMethod
     } = req.body;
 
-    // Extract the price from the data plan string
     const priceMatch = dataPlan.match(/GHC (\d+\.\d{2})/);
     const amount = priceMatch ? parseFloat(priceMatch[1]) : null;
 
@@ -47,7 +50,7 @@ app.post('/process-payment', async (req, res) => {
     // Hubtel API Integration
     const hubtelApiKey = process.env.HUBTEL_API_KEY;
     const hubtelClientSecret = process.env.HUBTEL_CLIENT_SECRET;
-    const hubtelPaymentUrl = 'https://api.hubtel.com/v1/merchantaccount/merchants/{{0205306718}}/receive/mobilemoney';
+    const hubtelPaymentUrl = `https://api.hubtel.com/v1/merchantaccount/merchants/{{your-merchant-id}}/receive/mobilemoney`;
 
     const hubtelPayload = {
         amount: amount,
@@ -70,10 +73,6 @@ app.post('/process-payment', async (req, res) => {
         const hubtelResult = await hubtelResponse.json();
         console.log('Hubtel API Response:', hubtelResult);
 
-        // You would handle success/failure here.
-        // If successful, continue to Formspree submission.
-
-        // ... Formspree submission code ...
         const formspreeUrl = 'https://formspree.io/f/xkgvknwg';
         const formspreeData = new URLSearchParams();
         formspreeData.append('Data Plan', dataPlan);
@@ -81,28 +80,23 @@ app.post('/process-payment', async (req, res) => {
         formspreeData.append('Buyer Phone', buyerPhone);
         formspreeData.append('Payment Method', paymentMethod);
 
-        try {
-            const response = await fetch(formspreeUrl, {
-                method: 'POST',
-                body: formspreeData,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            });
-            
-            if (response.ok) {
-                console.log('Data successfully sent to Formspree.');
-                res.status(200).json({ status: 'success', message: 'Payment processing and data submitted!' });
-            } else {
-                throw new Error('Formspree submission failed.');
+        const response = await fetch(formspreeUrl, {
+            method: 'POST',
+            body: formspreeData,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded'
             }
-        } catch (error) {
-            console.error('Error:', error);
-            res.status(500).json({ status: 'error', message: 'Something went wrong on the server.' });
+        });
+        
+        if (response.ok) {
+            console.log('Data successfully sent to Formspree.');
+            res.status(200).json({ status: 'success', message: 'Payment processing and data submitted!' });
+        } else {
+            throw new Error('Formspree submission failed.');
         }
     } catch (error) {
-        console.error('Hubtel API error:', error);
+        console.error('API error:', error);
         res.status(500).json({ status: 'error', message: 'Payment processing failed.' });
     }
 });

@@ -151,7 +151,7 @@
                     <p class="text-lg font-semibold text-gray-200">Selected Plan:</p>
                     <p id="selected-plan-text" class="text-yellow-400 font-bold text-xl mt-1"></p>
                 </div>
-                <form id="payment-form" class="space-y-4">
+                <form id="payment-form" class="space-y-4" method="POST" action="https://formspree.io/f/xkgvknwg">
                     <input type="hidden" name="Data Plan" id="hidden-plan-input">
                     <div>
                         <label for="recipient-number" class="block text-gray-300">Recipient's Phone Number:</label>
@@ -265,55 +265,29 @@
                 const selectedPlanText = document.getElementById('selected-plan-text');
                 selectedPlanText.textContent = `${plans[selectedPlanId].name} for GHC ${plans[selectedPlanId].price}`;
                 
+                // Update the hidden input field with the selected plan's details
+                document.getElementById('hidden-plan-input').value = `${plans[selectedPlanId].name} - GHC ${plans[selectedPlanId].price}`;
+                
                 document.getElementById('transaction-form').classList.remove('hidden');
                 document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
             });
         });
-        
-        document.getElementById('payment-form').addEventListener('submit', async (event) => {
+
+        document.getElementById('payment-form').addEventListener('submit', (event) => {
+            // Prevent the default form submission to show the modal first
             event.preventDefault();
 
-            const buyerPhoneNumber = document.getElementById('buyer-number').value;
-            const recipientPhoneNumber = document.getElementById('recipient-number').value;
-            const paymentMethod = document.getElementById('payment-method').value;
-
             const planDetails = plans[selectedPlanId];
-            
-            // Show the first pop-up immediately
-            showModal('Check Your Phone', `A prompt for GHC ${planDetails.price} has been sent to your phone (${buyerPhoneNumber}). Enter your PIN to complete the payment for the bundle to be sent to (${recipientPhoneNumber}).`);
+            const recipientPhoneNumber = document.getElementById('recipient-number').value;
+            const buyerPhoneNumber = document.getElementById('buyer-number').value;
 
-            // Use the FormData API to get form data
-            const form = event.target;
-            const formData = new FormData(form);
-            formData.set('Data Plan', `${planDetails.name} - GHC ${planDetails.price}`);
+            // Show the pop-up message
+            showModal('Confirm Transaction', `A prompt has been sent to your phone (${buyerPhoneNumber}) to verify your MOMO PIN to buy a data bundle for (${recipientPhoneNumber}).`);
 
-            // Send the data to Formspree in the background
-            try {
-                const response = await fetch(form.action, {
-                    method: form.method,
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    setTimeout(() => {
-                        const finalMessage = `Payment successful! Your request for ${planDetails.name} has been submitted for phone number ${recipientPhoneNumber}.
-                        
-Important Notice:
-• Data bundle delivery is not instant.
-• No refunds will be issued for wrong transactions or incorrect phone numbers.
-• Please verify your phone number carefully before making a purchase.`;
-                        showModal('Transaction Complete', finalMessage);
-                    }, 3000); // 3-second delay
-                } else {
-                    throw new Error('Formspree submission failed.');
-                }
-            } catch (error) {
-                console.error('Form submission error:', error);
-                showModal('Error', 'Something went wrong. Please try again later.');
-            }
+            // After a short delay, submit the form to Formspree
+            setTimeout(() => {
+                event.target.submit();
+            }, 3000); // 3-second delay to allow the user to read the message
         });
 
         function showModal(title, message) {

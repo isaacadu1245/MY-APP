@@ -1,23 +1,7 @@
-// server.js
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const fetch = require('node-fetch'); // Make sure to install this package
+// server.js (updated section)
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+// ... other code above ...
 
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(cors());
-
-// A simple endpoint to test if the server is working
-app.get('/', (req, res) => {
-    res.send('Server is running!');
-});
-
-// Endpoint to handle the form submission from your website
 app.post('/process-payment', async (req, res) => {
     console.log('Received form data:', req.body);
 
@@ -28,42 +12,52 @@ app.post('/process-payment', async (req, res) => {
         'Payment Method': paymentMethod
     } = req.body;
 
-    // TODO: Add your Hubtel payment processing logic here
-    // This is where you would make an API call to Hubtel using your private keys.
-    // The keys would be stored as environment variables on your server for security.
+    // Extract the price from the data plan string
+    const priceMatch = dataPlan.match(/GHC (\d+\.\d{2})/);
+    const amount = priceMatch ? parseFloat(priceMatch[1]) : null;
 
-    // Example of how to send the data to Formspree
-    const formspreeUrl = 'https://formspree.io/f/xkgvknwg';
-    const formspreeData = new URLSearchParams();
-    formspreeData.append('Data Plan', dataPlan);
-    formspreeData.append('Recipient Phone', recipientPhone);
-    formspreeData.append('Buyer Phone', buyerPhone);
-    formspreeData.append('Payment Method', paymentMethod);
+    if (!amount) {
+        return res.status(400).json({ status: 'error', message: 'Invalid data plan or price.' });
+    }
+
+    // Hubtel API Integration
+    const hubtelApiKey = process.env.HUBTEL_API_KEY;
+    const hubtelClientSecret = process.env.HUBTEL_CLIENT_SECRET;
+    const hubtelPaymentUrl = 'https://api.hubtel.com/v1/merchantaccount/merchants/{{your-merchant-id}}/receive/mobilemoney';
+
+    const hubtelPayload = {
+        amount: amount,
+        customerMsisdn: buyerPhone,
+        channel: paymentMethod,
+        description: `Payment for ${dataPlan}`,
+        callbackUrl: 'https://your-server.vercel.app/hubtel-callback' // A URL for Hubtel to notify you of payment status
+    };
 
     try {
-        const response = await fetch(formspreeUrl, {
+        const hubtelResponse = await fetch(hubtelPaymentUrl, {
             method: 'POST',
-            body: formspreeData,
+            body: JSON.stringify(hubtelPayload),
             headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + Buffer.from(`${hubtelApiKey}:${hubtelClientSecret}`).toString('base64')
             }
         });
-        
-        if (response.ok) {
-            console.log('Data successfully sent to Formspree.');
-            // Send a success message back to your website
-            res.status(200).json({ status: 'success', message: 'Payment processing and data submitted!' });
-        } else {
-            throw new Error('Formspree submission failed.');
-        }
+
+        const hubtelResult = await hubtelResponse.json();
+        console.log('Hubtel API Response:', hubtelResult);
+
+        // You would handle success/failure here.
+        // If successful, continue to Formspree submission.
+
+        // ... Formspree submission code ...
+
+        // Send a success message back to your website
+        res.status(200).json({ status: 'success', message: 'Payment prompt sent!' });
+
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ status: 'error', message: 'Something went wrong on the server.' });
+        console.error('Hubtel API error:', error);
+        res.status(500).json({ status: 'error', message: 'Payment processing failed.' });
     }
 });
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// ... other code below ...

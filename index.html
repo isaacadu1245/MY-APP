@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangerhitz Digital Media</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a202c; /* Dark background */
+            color: #e2e8f0; /* Light text */
+        }
+        .container {
+            max-width: 900px;
+        }
+        .network-card {
+            background-color: #2d3748;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .network-card:hover {
+            transform: translateY(-5px);
+        }
+        .mtn-card { border-color: #f7d100; border-width: 4px; border-style: solid; }
+        .at-card { border-color: #3b82f6; border-width: 4px; border-style: solid; }
+        .telecel-card { border-color: #ef4444; border-width: 4px; border-style: solid; }
+
+        /* Custom styles for the mobile money logos to be in the corners */
+        .network-logo {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .mtn-logo { background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/MTN_Logo.svg'); }
+        .at-logo { background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/23/AirtelTigo_Logo.svg'); }
+        .telecel-logo { background-image: url('https://upload.wikimedia.org/wikipedia/en/thumb/5/52/Telecel_Group_logo.svg/1200px-Telecel_Group_logo.svg.png'); }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal {
+            background-color: #2d3748;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .close-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #cbd5e0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-[#1a202c] min-h-screen flex flex-col items-center p-4">
+
+    <!-- Modal for messages and PIN entry -->
+    <div id="message-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <button class="close-button" onclick="closeModal()">×</button>
+            <h2 id="modal-title" class="text-2xl font-bold mb-4"></h2>
+            <p id="modal-message" class="text-gray-300"></p>
+            <button id="complete-transaction-btn" class="hidden w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md mt-4">Complete Transaction</button>
+        </div>
+    </div>
+
+    <main class="w-full flex-grow flex flex-col items-center">
+        <!-- Header Section -->
+        <header class="text-center p-6 w-full">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-[#f7d100] tracking-wide">BANGERHITZ DIGITAL MEDIA</h1>
+            <p class="text-lg sm:text-xl font-semibold text-white mt-2">BEST AFFORDABLE NO EXPIRY DATA PLANS FOR ALL NETWORKS</p>
+        </header>
+
+        <!-- Main Content Area -->
+        <div id="main-content" class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
+
+            <!-- MTN Card -->
+            <div class="network-card relative mtn-card p-6">
+                <span class="network-logo mtn-logo"></span>
+                <h2 class="text-2xl font-bold text-[#f7d100] mb-4">MTN</h2>
+                <ul class="text-lg space-y-2">
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-1gb">1GB - GHC 7.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-2gb">2GB - GHC 11.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-3gb">3GB - GHC 16.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-4gb">4GB - GHC 22.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-5gb">5GB - GHC 26.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-6gb">6GB - GHC 31.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-8gb">8GB - GHC 41.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-10gb">10GB - GHC 50.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-15gb">15GB - GHC 72.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-20gb">20GB - GHC 90.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-25gb">25GB - GHC 110.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-30gb">30GB - GHC 135.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-40gb">40GB - GHC 173.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-50gb">50GB - GHC 212.00</li>
+                </ul>
+            </div>
+
+            <!-- AT Card -->
+            <div class="network-card relative at-card p-6">
+                <span class="network-logo at-logo"></span>
+                <h2 class="text-2xl font-bold text-[#3b82f6] mb-4">AT</h2>
+                <ul class="text-lg space-y-2">
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-1gb">1GB - GHC 6.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-2gb">2GB - GHC 10.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-3gb">3GB - GHC 14.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-4gb">4GB - GHC 18.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-5gb">5GB - GHC 22.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-6gb">6GB - GHC 26.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-8gb">8GB - GHC 34.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-10gb">10GB - GHC 42.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-12gb">12GB - GHC 49.00</li>
+                </ul>
+            </div>
+
+            <!-- Telecel Card -->
+            <div class="network-card relative telecel-card p-6">
+                <span class="network-logo telecel-logo"></span>
+                <h2 class="text-2xl font-bold text-[#ef4444] mb-4">Telecel</h2>
+                <ul class="text-lg space-y-2">
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-5gb">5GB - GHC 26.00</li>
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-10gb">10GB - GHC 46.00</li>
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-20gb">20GB - GHC 81.00</li>
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-30gb">30GB - GHC 116.00</li>
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-40gb">40GB - GHC 156.00</li>
+                </ul>
+            </div>
+
+            <!-- Transaction Form -->
+            <div id="transaction-form" class="hidden md:col-span-3 lg:col-span-3 bg-gray-700 p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-white">Purchase Data Bundle</h2>
+                <div class="mb-4">
+                    <p class="text-lg font-semibold text-gray-200">Selected Plan:</p>
+                    <p id="selected-plan-text" class="text-yellow-400 font-bold text-xl mt-1"></p>
+                </div>
+                <form id="payment-form" class="space-y-4">
+                    <div>
+                        <label for="recipient-number" class="block text-gray-300">Recipient's Phone Number:</label>
+                        <input type="tel" id="recipient-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
+                    </div>
+                    <div>
+                        <label for="buyer-number" class="block text-gray-300">Your Phone Number (for payment):</label>
+                        <input type="tel" id="buyer-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
+                    </div>
+                    <div>
+                        <label for="payment-method" class="block text-gray-300">Select Payment Method:</label>
+                        <select id="payment-method" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" required>
+                            <option value="">-- Choose Method --</option>
+                            <option value="mtn_momo">MTN Mobile Money</option>
+                            <option value="telecel_cash">Telecel Cash</option>
+                            <option value="at_money">AT Money</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md">Proceed to Payment</button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Contact and Notice Section -->
+        <div class="w-full max-w-6xl mt-8 p-4 md:p-8 bg-gray-800 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between">
+            <div class="text-center md:text-left mb-4 md:mb-0">
+                <h3 class="text-xl font-bold text-white mb-2">Important Notice</h3>
+                <ul class="text-sm text-gray-400 space-y-1">
+                    <li>• Data bundle delivery is not instant. Some numbers may receive data faster while others take some time.</li>
+                    <li>• No refunds will be issued for wrong transactions or incorrect phone numbers.</li>
+                    <li>• Please verify your phone number carefully before making a purchase.</li>
+                </ul>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-sm font-semibold text-gray-400">Mon-Sun: 8AM - 9PM</p>
+                <div class="mt-2 text-white">
+                    <a href="tel:0205306718" class="flex items-center justify-center md:justify-end text-2xl font-bold hover:text-yellow-500 transition-colors duration-200">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.774a11.537 11.537 0 003.886 3.886l.774-1.548a1 1 0 011.06-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                        0205306718
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center mt-8 text-gray-500 text-xs">
+        &copy; 2023 Bangerhitz Digital Media. All rights reserved.
+    </footer>
+
+    <script>
+        const plans = {
+            'mtn-1gb': { name: 'MTN 1GB', price: '7.00' },
+            'mtn-2gb': { name: 'MTN 2GB', price: '11.00' },
+            'mtn-3gb': { name: 'MTN 3GB', price: '16.00' },
+            'mtn-4gb': { name: 'MTN 4GB', price: '22.00' },
+            'mtn-5gb': { name: 'MTN 5GB', price: '26.00' },
+            'mtn-6gb': { name: 'MTN 6GB', price: '31.00' },
+            'mtn-8gb': { name: 'MTN 8GB', price: '41.00' },
+            'mtn-10gb': { name: 'MTN 10GB', price: '50.00' },
+            'mtn-15gb': { name: 'MTN 15GB', price: '72.00' },
+            'mtn-20gb': { name: 'MTN 20GB', price: '90.00' },
+            'mtn-25gb': { name: 'MTN 25GB', price: '110.00' },
+            'mtn-30gb': { name: 'MTN 30GB', price: '135.00' },
+            'mtn-40gb': { name: 'MTN 40GB', price: '173.00' },
+            'mtn-50gb': { name: 'MTN 50GB', price: '212.00' },
+            'at-1gb': { name: 'AT 1GB', price: '6.00' },
+            'at-2gb': { name: 'AT 2GB', price: '10.00' },
+            'at-3gb': { name: 'AT 3GB', price: '14.00' },
+            'at-4gb': { name: 'AT 4GB', price: '18.00' },
+            'at-5gb': { name: 'AT 5GB', price: '22.00' },
+            'at-6gb': { name: 'AT 6GB', price: '26.00' },
+            'at-8gb': { name: 'AT 8GB', price: '34.00' },
+            'at-10gb': { name: 'AT 10GB', price: '42.00' },
+            'at-12gb': { name: 'AT 12GB', price: '49.00' },
+            'telecel-5gb': { name: 'Telecel 5GB', price: '26.00' },
+            'telecel-10gb': { name: 'Telecel 10GB', price: '46.00' },
+            'telecel-20gb': { name: 'Telecel 20GB', price: '81.00' },
+            'telecel-30gb': { name: 'Telecel 30GB', price: '116.00' },
+            'telecel-40gb': { name: 'Telecel 40GB', price: '156.00' },
+        };
+
+        let selectedPlanId = null;
+        let buyerPhoneNumber = null;
+        let recipientPhoneNumber = null;
+
+        document.querySelectorAll('.network-card li').forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active state from all items
+                document.querySelectorAll('.network-card li').forEach(el => {
+                    el.classList.remove('bg-yellow-700', 'bg-red-700', 'bg-gray-600', 'ring-2', 'ring-offset-2', 'ring-offset-gray-700', 'bg-blue-700');
+                    el.classList.add('hover:bg-yellow-800', 'hover:bg-red-800', 'hover:bg-gray-700', 'hover:bg-blue-800');
+                });
+                
+                // Add active state to the clicked item
+                selectedPlanId = item.dataset.plan;
+                const network = selectedPlanId.split('-')[0];
+                if (network === 'mtn') {
+                    item.classList.add('bg-yellow-700');
+                    item.classList.add('ring-yellow-500');
+                    item.classList.remove('hover:bg-yellow-800');
+                } else if (network === 'at') {
+                    item.classList.add('bg-blue-700');
+                    item.classList.add('ring-blue-500');
+                    item.classList.remove('hover:bg-blue-800');
+                } else if (network === 'telecel') {
+                    item.classList.add('bg-red-700');
+                    item.classList.add('ring-red-400');
+                    item.classList.remove('hover:bg-red-700');
+                }
+                item.classList.add('ring-2', 'ring-offset-2', 'ring-offset-gray-700');
+
+                // Update and show the form
+                const selectedPlanText = document.getElementById('selected-plan-text');
+                selectedPlanText.textContent = `${plans[selectedPlanId].name} for GHC ${plans[selectedPlanId].price}`;
+                document.getElementById('transaction-form').classList.remove('hidden');
+                document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        document.getElementById('payment-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            buyerPhoneNumber = document.getElementById('buyer-number').value;
+            recipientPhoneNumber = document.getElementById('recipient-number').value;
+            const paymentMethod = document.getElementById('payment-method').value;
+
+            if (selectedPlanId && buyerPhoneNumber && recipientPhoneNumber && paymentMethod) {
+                const planDetails = plans[selectedPlanId];
+                showModal('Check Your Phone', `A prompt for GHC ${planDetails.price} has been sent to your phone (${buyerPhoneNumber}). Enter your PIN to complete the payment for the bundle to be sent to (${recipientPhoneNumber}).`);
+                document.getElementById('complete-transaction-btn').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('complete-transaction-btn').addEventListener('click', () => {
+            const planDetails = plans[selectedPlanId];
+            showModal('Processing...', 'Please wait while we process your transaction.');
+            document.getElementById('complete-transaction-btn').classList.add('hidden');
+
+            setTimeout(() => {
+                const finalMessage = `Payment successful! Your request for ${planDetails.name} has been submitted for phone number ${recipientPhoneNumber}.
+                
+                Important Notice:
+                • Data bundle delivery is not instant.
+                • No refunds will be issued for wrong transactions or incorrect phone numbers.
+                • Please verify your phone number carefully before making a purchase.`;
+                showModal('Transaction Complete', finalMessage);
+            }, 3000); // 3-second delay
+        });
+
+        function showModal(title, message) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('message-modal').classList.remove('hidden');
+            document.getElementById('complete-transaction-btn').classList.add('hidden'); // Hide until needed
+        }
+
+        function closeModal() {
+            document.getElementById('message-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

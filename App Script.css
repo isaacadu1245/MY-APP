@@ -1,0 +1,67 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #1a202c; /* Dark background */
+    color: #e2e8f0; /* Light text */
+}
+.container {
+    max-width: 900px;
+}
+.network-card {
+    background-color: #2d3748;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
+}
+.network-card:hover {
+    transform: translateY(-5px);
+}
+.mtn-card { border-color: #f7d100; border-width: 4px; border-style: solid; }
+.at-card { border-color: #3b82f6; border-width: 4px; border-style: solid; }
+.telecel-card { border-color: #ef4444; border-width: 4px; border-style: solid; }
+
+/* Custom styles for the mobile money logos to be in the corners */
+.network-logo {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 50px;
+    height: 50px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+.mtn-logo { background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/MTN_Logo.svg'); }
+.at-logo { background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/23/AirtelTigo_Logo.svg'); }
+.telecel-logo { background-image: url('https://upload.wikimedia.org/wikipedia/en/thumb/5/52/Telecel_Group_logo.svg/1200px-Telecel_Group_logo.svg.png'); }
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal {
+    background-color: #2d3748;
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+.close-button {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #cbd5e0;
+    cursor: pointer;
+}

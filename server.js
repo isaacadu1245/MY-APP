@@ -47,7 +47,7 @@ app.post('/process-payment', async (req, res) => {
     // Hubtel API Integration
     const hubtelApiKey = process.env.HUBTEL_API_KEY;
     const hubtelClientSecret = process.env.HUBTEL_CLIENT_SECRET;
-    const hubtelPaymentUrl = 'https://api.hubtel.com/v1/merchantaccount/merchants/{{your-merchant-id}}/receive/mobilemoney';
+    const hubtelPaymentUrl = 'https://api.hubtel.com/v1/merchantaccount/merchants/{{0205306718}}/receive/mobilemoney';
 
     const hubtelPayload = {
         amount: amount,

@@ -80,27 +80,22 @@
 </head>
 <body class="bg-[#1a202c] min-h-screen flex flex-col items-center p-4">
 
-    <!-- Modal for messages and PIN entry -->
     <div id="message-modal" class="modal-overlay hidden">
         <div class="modal">
-            <button class="close-button" onclick="closeModal()">×</button>
+            <button class="close-button" onclick="closeModal()">Ã—</button>
             <h2 id="modal-title" class="text-2xl font-bold mb-4"></h2>
             <p id="modal-message" class="text-gray-300"></p>
-            <button id="complete-transaction-btn" class="hidden w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md mt-4">Complete Transaction</button>
         </div>
     </div>
 
     <main class="w-full flex-grow flex flex-col items-center">
-        <!-- Header Section -->
         <header class="text-center p-6 w-full">
             <h1 class="text-3xl sm:text-4xl font-extrabold text-[#f7d100] tracking-wide">BANGERHITZ DIGITAL MEDIA</h1>
             <p class="text-lg sm:text-xl font-semibold text-white mt-2">BEST AFFORDABLE NO EXPIRY DATA PLANS FOR ALL NETWORKS</p>
         </header>
 
-        <!-- Main Content Area -->
         <div id="main-content" class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
 
-            <!-- MTN Card -->
             <div class="network-card relative mtn-card p-6">
                 <span class="network-logo mtn-logo"></span>
                 <h2 class="text-2xl font-bold text-[#f7d100] mb-4">MTN</h2>
@@ -122,7 +117,6 @@
                 </ul>
             </div>
 
-            <!-- AT Card -->
             <div class="network-card relative at-card p-6">
                 <span class="network-logo at-logo"></span>
                 <h2 class="text-2xl font-bold text-[#3b82f6] mb-4">AT</h2>
@@ -139,7 +133,6 @@
                 </ul>
             </div>
 
-            <!-- Telecel Card -->
             <div class="network-card relative telecel-card p-6">
                 <span class="network-logo telecel-logo"></span>
                 <h2 class="text-2xl font-bold text-[#ef4444] mb-4">Telecel</h2>
@@ -152,29 +145,29 @@
                 </ul>
             </div>
 
-            <!-- Transaction Form -->
             <div id="transaction-form" class="hidden md:col-span-3 lg:col-span-3 bg-gray-700 p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">Purchase Data Bundle</h2>
                 <div class="mb-4">
                     <p class="text-lg font-semibold text-gray-200">Selected Plan:</p>
                     <p id="selected-plan-text" class="text-yellow-400 font-bold text-xl mt-1"></p>
                 </div>
-                <form id="payment-form" class="space-y-4">
+                <form id="payment-form" class="space-y-4" method="POST" action="YOUR_FORMSPREE_URL">
+                    <input type="hidden" name="Data Plan" id="hidden-plan-input">
                     <div>
                         <label for="recipient-number" class="block text-gray-300">Recipient's Phone Number:</label>
-                        <input type="tel" id="recipient-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
+                        <input type="tel" name="Recipient Phone" id="recipient-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
                     </div>
                     <div>
                         <label for="buyer-number" class="block text-gray-300">Your Phone Number (for payment):</label>
-                        <input type="tel" id="buyer-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
+                        <input type="tel" name="Buyer Phone" id="buyer-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
                     </div>
                     <div>
                         <label for="payment-method" class="block text-gray-300">Select Payment Method:</label>
-                        <select id="payment-method" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" required>
+                        <select name="Payment Method" id="payment-method" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" required>
                             <option value="">-- Choose Method --</option>
-                            <option value="mtn_momo">MTN Mobile Money</option>
-                            <option value="telecel_cash">Telecel Cash</option>
-                            <option value="at_money">AT Money</option>
+                            <option value="MTN Mobile Money">MTN Mobile Money</option>
+                            <option value="Telecel Cash">Telecel Cash</option>
+                            <option value="AT Money">AT Money</option>
                         </select>
                     </div>
                     <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md">Proceed to Payment</button>
@@ -183,14 +176,13 @@
 
         </div>
 
-        <!-- Contact and Notice Section -->
         <div class="w-full max-w-6xl mt-8 p-4 md:p-8 bg-gray-800 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between">
             <div class="text-center md:text-left mb-4 md:mb-0">
                 <h3 class="text-xl font-bold text-white mb-2">Important Notice</h3>
                 <ul class="text-sm text-gray-400 space-y-1">
-                    <li>• Data bundle delivery is not instant. Some numbers may receive data faster while others take some time.</li>
-                    <li>• No refunds will be issued for wrong transactions or incorrect phone numbers.</li>
-                    <li>• Please verify your phone number carefully before making a purchase.</li>
+                    <li>â€¢ Data bundle delivery is not instant. Some numbers may receive data faster while others take some time.</li>
+                    <li>â€¢ No refunds will be issued for wrong transactions or incorrect phone numbers.</li>
+                    <li>â€¢ Please verify your phone number carefully before making a purchase.</li>
                 </ul>
             </div>
             <div class="text-center md:text-right">
@@ -242,8 +234,6 @@
         };
 
         let selectedPlanId = null;
-        let buyerPhoneNumber = null;
-        let recipientPhoneNumber = null;
 
         document.querySelectorAll('.network-card li').forEach(item => {
             item.addEventListener('click', () => {
@@ -274,47 +264,19 @@
                 // Update and show the form
                 const selectedPlanText = document.getElementById('selected-plan-text');
                 selectedPlanText.textContent = `${plans[selectedPlanId].name} for GHC ${plans[selectedPlanId].price}`;
+                
+                // Update the hidden input field with the selected plan's details
+                document.getElementById('hidden-plan-input').value = `${plans[selectedPlanId].name} - GHC ${plans[selectedPlanId].price}`;
+                
                 document.getElementById('transaction-form').classList.remove('hidden');
                 document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
             });
         });
 
-        document.getElementById('payment-form').addEventListener('submit', (event) => {
-            event.preventDefault();
-            buyerPhoneNumber = document.getElementById('buyer-number').value;
-            recipientPhoneNumber = document.getElementById('recipient-number').value;
-            const paymentMethod = document.getElementById('payment-method').value;
-
-            if (selectedPlanId && buyerPhoneNumber && recipientPhoneNumber && paymentMethod) {
-                const planDetails = plans[selectedPlanId];
-                showModal('Check Your Phone', `A prompt for GHC ${planDetails.price} has been sent to your phone (${buyerPhoneNumber}). Enter your PIN to complete the payment for the bundle to be sent to (${recipientPhoneNumber}).`);
-                document.getElementById('complete-transaction-btn').classList.remove('hidden');
-            }
-        });
-
-        document.getElementById('complete-transaction-btn').addEventListener('click', () => {
-            const planDetails = plans[selectedPlanId];
-            showModal('Processing...', 'Please wait while we process your transaction.');
-            document.getElementById('complete-transaction-btn').classList.add('hidden');
-
-            setTimeout(() => {
-                const finalMessage = `Payment successful! Your request for ${planDetails.name} has been submitted for phone number ${recipientPhoneNumber}.
-                
-                Important Notice:
-                • Data bundle delivery is not instant.
-                • No refunds will be issued for wrong transactions or incorrect phone numbers.
-                • Please verify your phone number carefully before making a purchase.`;
-                showModal('Transaction Complete', finalMessage);
-            }, 3000); // 3-second delay
-        });
-
-        function showModal(title, message) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-message').textContent = message;
-            document.getElementById('message-modal').classList.remove('hidden');
-            document.getElementById('complete-transaction-btn').classList.add('hidden'); // Hide until needed
-        }
-
+        // The old form submission logic is now handled by Formspree.
+        // I've removed the JavaScript related to the "Proceed to Payment"
+        // button and modal since the form submission itself is now automatic.
+        
         function closeModal() {
             document.getElementById('message-modal').classList.add('hidden');
         }

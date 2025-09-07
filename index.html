@@ -299,9 +299,20 @@
         function closeModal() {
             document.getElementById('message-modal').classList.add('hidden');
         }
-    </script>
-</body>
-</html>
-
-
-
+   fetch('https://purchase-data-bundle.vercel.app/process-payment', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Redirect the user to the Paystack payment page
+                window.location.href = data.paymentUrl;
+            } else {
+                alert(`Error: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Something went wrong. Please try again later.');
+        });

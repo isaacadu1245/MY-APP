@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 const corsOptions = {
     origin: 'https://purchase-data-bundle.onrender.com', 
     optionsSuccessStatus: 200,
-    methods: ['GET', 'POST', 'OPTIONS'], // Allow these methods
+    methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 };
 
@@ -40,63 +40,61 @@ app.post('/process-payment', async (req, res) => {
         'Payment Method': paymentMethod
     } = req.body;
 
-    const priceMatch = dataPlan.match(/GHC (\d+\.\d{2})/);
-    const amount = priceMatch ? parseFloat(priceMatch[1]) : null;
+    // Check if the buyer's phone number is provided
+    if (!buyerPhone) {
+        return res.status(400).json({ status: 'error', message: 'Buyer Phone number is required for payment.' });
+    }
 
-    if (!amount) {
+    const priceMatch = dataPlan.match(/GHC (\d+\.\d{2})/);
+    // Convert to Ghana pesewas (amount * 100) as required by Paystack
+    const amountInPesewas = priceMatch ? parseFloat(priceMatch[1]) * 100 : null;
+
+    if (!amountInPesewas) {
         return res.status(400).json({ status: 'error', message: 'Invalid data plan or price.' });
     }
 
-    // Hubtel API Integration
-    const hubtelApiKey = process.env.HUBTEL_API_KEY;
-    const hubtelClientSecret = process.env.HUBTEL_CLIENT_SECRET;
-    const hubtelPaymentUrl = `https://api.hubtel.com/v1/merchantaccount/merchants/{{your-merchant-id}}/receive/mobilemoney`;
-
-    const hubtelPayload = {
-        amount: amount,
-        customerMsisdn: buyerPhone,
-        channel: paymentMethod,
-        description: `Payment for ${dataPlan}`,
-        callbackUrl: 'https://your-server.vercel.app/hubtel-callback'
-    };
+    // Paystack API Integration
+    // You must add your Paystack Secret Key to Vercel's environment variables
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+    const paystackInitUrl = 'https://api.paystack.co/transaction/initialize';
 
     try {
-        const hubtelResponse = await fetch(hubtelPaymentUrl, {
+        // Initialize a payment transaction with Paystack
+        const paystackResponse = await fetch(paystackInitUrl, {
             method: 'POST',
-            body: JSON.stringify(hubtelPayload),
+            body: JSON.stringify({
+                email: 'customer@example.com', // Use a default email or get one from the user
+                amount: amountInPesewas,
+                currency: 'GHS',
+                metadata: {
+                    recipient_phone: recipientPhone,
+                    data_plan: dataPlan,
+                    buyer_phone: buyerPhone,
+                    payment_method: paymentMethod
+                }
+            }),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + Buffer.from(`${hubtelApiKey}:${hubtelClientSecret}`).toString('base64')
+                'Authorization': `Bearer ${paystackSecretKey}`
             }
         });
 
-        const hubtelResult = await hubtelResponse.json();
-        console.log('Hubtel API Response:', hubtelResult);
+        const paystackResult = await paystackResponse.json();
+        console.log('Paystack API Response:', paystackResult);
 
-        const formspreeUrl = 'https://formspree.io/f/xkgvknwg';
-        const formspreeData = new URLSearchParams();
-        formspreeData.append('Data Plan', dataPlan);
-        formspreeData.append('Recipient Phone', recipientPhone);
-        formspreeData.append('Buyer Phone', buyerPhone);
-        formspreeData.append('Payment Method', paymentMethod);
-
-        const response = await fetch(formspreeUrl, {
-            method: 'POST',
-            body: formspreeData,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-        
-        if (response.ok) {
-            console.log('Data successfully sent to Formspree.');
-            res.status(200).json({ status: 'success', message: 'Payment processing and data submitted!' });
+        // If the transaction initialization is successful, send the authorization URL back to the client
+        if (paystackResult.status && paystackResult.data.authorization_url) {
+            res.status(200).json({
+                status: 'success',
+                message: 'Payment initialized.',
+                paymentUrl: paystackResult.data.authorization_url
+            });
         } else {
-            throw new Error('Formspree submission failed.');
+            console.error('Paystack Initialization Failed:', paystackResult.message);
+            res.status(400).json({ status: 'error', message: 'Paystack initialization failed.' });
         }
     } catch (error) {
-        console.error('API error:', error);
+        console.error('Paystack API error:', error);
         res.status(500).json({ status: 'error', message: 'Payment processing failed.' });
     }
 });

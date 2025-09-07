@@ -202,117 +202,119 @@
     </footer>
 
     <script>
-        const plans = {
-            'mtn-1gb': { name: 'MTN 1GB', price: '7.00' },
-            'mtn-2gb': { name: 'MTN 2GB', price: '11.00' },
-            'mtn-3gb': { name: 'MTN 3GB', price: '16.00' },
-            'mtn-4gb': { name: 'MTN 4GB', price: '22.00' },
-            'mtn-5gb': { name: 'MTN 5GB', price: '26.00' },
-            'mtn-6gb': { name: 'MTN 6GB', price: '31.00' },
-            'mtn-8gb': { name: 'MTN 8GB', price: '41.00' },
-            'mtn-10gb': { name: 'MTN 10GB', price: '50.00' },
-            'mtn-15gb': { name: 'MTN 15GB', price: '72.00' },
-            'mtn-20gb': { name: 'MTN 20GB', price: '90.00' },
-            'mtn-25gb': { name: 'MTN 25GB', price: '110.00' },
-            'mtn-30gb': { name: 'MTN 30GB', price: '135.00' },
-            'mtn-40gb': { name: 'MTN 40GB', price: '173.00' },
-            'mtn-50gb': { name: 'MTN 50GB', price: '212.00' },
-            'at-1gb': { name: 'AT 1GB', price: '6.00' },
-            'at-2gb': { name: 'AT 2GB', price: '10.00' },
-            'at-3gb': { name: 'AT 3GB', price: '14.00' },
-            'at-4gb': { name: 'AT 4GB', price: '18.00' },
-            'at-5gb': { name: 'AT 5GB', price: '22.00' },
-            'at-6gb': { name: 'AT 6GB', price: '26.00' },
-            'at-8gb': { name: 'AT 8GB', price: '34.00' },
-            'at-10gb': { name: 'AT 10GB', price: '42.00' },
-            'at-12gb': { name: 'AT 12GB', price: '49.00' },
-            'telecel-5gb': { name: 'Telecel 5GB', price: '26.00' },
-            'telecel-10gb': { name: 'Telecel 10GB', price: '46.00' },
-            'telecel-20gb': { name: 'Telecel 20GB', price: '81.00' },
-            'telecel-30gb': { name: 'Telecel 30GB', price: '116.00' },
-            'telecel-40gb': { name: 'Telecel 40GB', price: '156.00' },
-        };
+    const plans = {
+        'mtn-1gb': { name: 'MTN 1GB', price: '7.00' },
+        'mtn-2gb': { name: 'MTN 2GB', price: '11.00' },
+        'mtn-3gb': { name: 'MTN 3GB', price: '16.00' },
+        'mtn-4gb': { name: 'MTN 4GB', price: '22.00' },
+        'mtn-5gb': { name: 'MTN 5GB', price: '26.00' },
+        'mtn-6gb': { name: 'MTN 6GB', price: '31.00' },
+        'mtn-8gb': { name: 'MTN 8GB', price: '41.00' },
+        'mtn-10gb': { name: 'MTN 10GB', price: '50.00' },
+        'mtn-15gb': { name: 'MTN 15GB', price: '72.00' },
+        'mtn-20gb': { name: 'MTN 20GB', price: '90.00' },
+        'mtn-25gb': { name: 'MTN 25GB', price: '110.00' },
+        'mtn-30gb': { name: 'MTN 30GB', price: '135.00' },
+        'mtn-40gb': { name: 'MTN 40GB', price: '173.00' },
+        'mtn-50gb': { name: 'MTN 50GB', price: '212.00' },
+        'at-1gb': { name: 'AT 1GB', price: '6.00' },
+        'at-2gb': { name: 'AT 2GB', price: '10.00' },
+        'at-3gb': { name: 'AT 3GB', price: '14.00' },
+        'at-4gb': { name: 'AT 4GB', price: '18.00' },
+        'at-5gb': { name: 'AT 5GB', price: '22.00' },
+        'at-6gb': { name: 'AT 6GB', price: '26.00' },
+        'at-8gb': { name: 'AT 8GB', price: '34.00' },
+        'at-10gb': { name: 'AT 10GB', price: '42.00' },
+        'at-12gb': { name: 'AT 12GB', price: '49.00' },
+        'telecel-5gb': { name: 'Telecel 5GB', price: '26.00' },
+        'telecel-10gb': { name: 'Telecel 10GB', price: '46.00' },
+        'telecel-20gb': { name: 'Telecel 20GB', price: '81.00' },
+        'telecel-30gb': { name: 'Telecel 30GB', price: '116.00' },
+        'telecel-40gb': { name: 'Telecel 40GB', price: '156.00' },
+    };
 
-        let selectedPlanId = null;
+    let selectedPlanId = null;
 
-        document.querySelectorAll('.network-card li').forEach(item => {
-            item.addEventListener('click', () => {
-                // Remove active state from all items
-                document.querySelectorAll('.network-card li').forEach(el => {
-                    el.classList.remove('bg-yellow-700', 'bg-red-700', 'bg-gray-600', 'ring-2', 'ring-offset-2', 'ring-offset-gray-700', 'bg-blue-700');
-                    el.classList.add('hover:bg-yellow-800', 'hover:bg-red-800', 'hover:bg-gray-700', 'hover:bg-blue-800');
-                });
-                
-                // Add active state to the clicked item
-                selectedPlanId = item.dataset.plan;
-                const network = selectedPlanId.split('-')[0];
-                if (network === 'mtn') {
-                    item.classList.add('bg-yellow-700');
-                    item.classList.add('ring-yellow-500');
-                    item.classList.remove('hover:bg-yellow-800');
-                } else if (network === 'at') {
-                    item.classList.add('bg-blue-700');
-                    item.classList.add('ring-blue-500');
-                    item.classList.remove('hover:bg-blue-800');
-                } else if (network === 'telecel') {
-                    item.classList.add('bg-red-700');
-                    item.classList.add('ring-red-400');
-                    item.classList.remove('hover:bg-red-700');
-                }
-                item.classList.add('ring-2', 'ring-offset-2', 'ring-offset-gray-700');
-
-                // Update and show the form
-                const selectedPlanText = document.getElementById('selected-plan-text');
-                selectedPlanText.textContent = `${plans[selectedPlanId].name} for GHC ${plans[selectedPlanId].price}`;
-                
-                // Update the hidden input field with the selected plan's details
-                document.getElementById('hidden-plan-input').value = `${plans[selectedPlanId].name} - GHC ${plans[selectedPlanId].price}`;
-                
-                document.getElementById('transaction-form').classList.remove('hidden');
-                document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
+    document.querySelectorAll('.network-card li').forEach(item => {
+        item.addEventListener('click', () => {
+            // Remove active state from all items
+            document.querySelectorAll('.network-card li').forEach(el => {
+                el.classList.remove('bg-yellow-700', 'bg-red-700', 'bg-gray-600', 'ring-2', 'ring-offset-2', 'ring-offset-gray-700', 'bg-blue-700');
+                el.classList.add('hover:bg-yellow-800', 'hover:bg-red-800', 'hover:bg-gray-700', 'hover:bg-blue-800');
             });
-        });
-
-        document.getElementById('payment-form').addEventListener('submit', (event) => {
-            // Prevent the default form submission to show the modal first
-            event.preventDefault();
-
-            const planDetails = plans[selectedPlanId];
-            const recipientPhoneNumber = document.getElementById('recipient-number').value;
-            const buyerPhoneNumber = document.getElementById('buyer-number').value;
-
-            // Show the pop-up message
-            showModal('Confirm Transaction', `A prompt has been sent to your phone (${buyerPhoneNumber}) to verify your MOMO PIN to buy a data bundle for (${recipientPhoneNumber}).`);
-
-            // After a short delay, submit the form to Formspree
-            setTimeout(() => {
-                event.target.submit();
-            }, 3000); // 3-second delay to allow the user to read the message
-        });
-
-        function showModal(title, message) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-message').textContent = message;
-            document.getElementById('message-modal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('message-modal').classList.add('hidden');
-        }
-   fetch('https://purchase-data-bundle.vercel.app/process-payment', {
-            method: 'POST',
-            body: formData,
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Redirect the user to the Paystack payment page
-                window.location.href = data.paymentUrl;
-            } else {
-                alert(`Error: ${data.message}`);
+            
+            // Add active state to the clicked item
+            selectedPlanId = item.dataset.plan;
+            const network = selectedPlanId.split('-')[0];
+            if (network === 'mtn') {
+                item.classList.add('bg-yellow-700');
+                item.classList.add('ring-yellow-500');
+                item.classList.remove('hover:bg-yellow-800');
+            } else if (network === 'at') {
+                item.classList.add('bg-blue-700');
+                item.classList.add('ring-blue-500');
+                item.classList.remove('hover:bg-blue-800');
+            } else if (network === 'telecel') {
+                item.classList.add('bg-red-700');
+                item.classList.add('ring-red-400');
+                item.classList.remove('hover:bg-red-700');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Something went wrong. Please try again later.');
+            item.classList.add('ring-2', 'ring-offset-2', 'ring-offset-gray-700');
+
+            // Update and show the form
+            const selectedPlanText = document.getElementById('selected-plan-text');
+            selectedPlanText.textContent = `${plans[selectedPlanId].name} for GHC ${plans[selectedPlanId].price}`;
+            
+            // Update the hidden input field with the selected plan's details
+            document.getElementById('hidden-plan-input').value = `${plans[selectedPlanId].name} - GHC ${plans[selectedPlanId].price}`;
+            
+            document.getElementById('transaction-form').classList.remove('hidden');
+            document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
         });
+    });
+
+    document.getElementById('payment-form').addEventListener('submit', async (event) => {
+        // Prevent the default form submission (so we can handle it with fetch)
+        event.preventDefault();
+
+        // Show a loading message to the user
+        const submitButton = document.querySelector('button[type="submit"]');
+        submitButton.textContent = 'Processing...';
+        submitButton.disabled = true;
+
+        const formData = new FormData(event.target);
+
+        try {
+            const response = await fetch('https://purchase-data-bundle.vercel.app/process-payment', {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                // The server successfully initiated the Paystack transaction
+                window.location.href = data.paymentUrl; // Redirect to Paystack's payment page
+            } else {
+                // The server sent an error message
+                alert(`Error: ${data.message}`);
+                submitButton.textContent = 'Proceed to Payment';
+                submitButton.disabled = false;
+            }
+        } catch (error) {
+            console.error('Network Error:', error);
+            alert('Something went wrong. Please check your internet connection and try again.');
+            submitButton.textContent = 'Proceed to Payment';
+            submitButton.disabled = false;
+        }
+    });
+
+    function showModal(title, message) {
+        // This function is no longer needed but kept for reference.
+        // The new code handles errors with an alert and success by redirecting.
+    }
+
+    function closeModal() {
+        // This function is no longer needed.
+    }
+</script>

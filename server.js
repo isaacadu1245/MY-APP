@@ -94,7 +94,7 @@ app.post('/process-payment', async (req, res) => {
     }
 });
 
-// *** CORRECTED WEBHOOK ENDPOINT FOR AUTOMATED DATA DELIVERY ***
+// *** WEBHOOK ENDPOINT FOR AUTOMATED DATA DELIVERY ***
 app.post('/webhook', (req, res) => {
     // We now use the PAYSTACK_SECRET_KEY for webhook verification as a workaround
     const secret = process.env.PAYSTACK_SECRET_KEY;
@@ -161,4 +161,5 @@ app.post('/webhook', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://
+    console.log(`Server is running on http://localhost:${PORT}`);
+});

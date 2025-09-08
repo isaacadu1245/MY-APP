@@ -3,15 +3,18 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware for parsing forms and JSON
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 
-// CORS configuration to allow your Render site to communicate with the Vercel server
+// Special middleware for Paystack webhooks to read raw body
+app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } }));
+
+// CORS configuration for your Render site
 const corsOptions = {
     origin: 'https://purchase-data-bundle.onrender.com', 
     optionsSuccessStatus: 200,
@@ -20,19 +23,16 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// This explicitly handles the CORS preflight OPTIONS request
 app.options('/process-payment', cors(corsOptions));
 
-// A simple endpoint to test if the server is working
+// Endpoints
 app.get('/', (req, res) => {
     res.send('Server is running!');
 });
 
-// Endpoint to handle the form submission from your website
+// Endpoint to handle the payment initiation
 app.post('/process-payment', async (req, res) => {
     console.log('Received form data:', req.body);
-
     const {
         'Data Plan': dataPlan,
         'Recipient Phone': recipientPhone,
@@ -61,7 +61,7 @@ app.post('/process-payment', async (req, res) => {
                 email: 'customer@example.com',
                 amount: amountInPesewas,
                 currency: 'GHS',
-                callback_url: 'https://purchase-data-bundle.onrender.com', // Replace with your Render URL
+                callback_url: 'https://purchase-data-bundle.onrender.com',
                 metadata: {
                     recipient_phone: recipientPhone,
                     data_plan: dataPlan,
@@ -79,40 +79,11 @@ app.post('/process-payment', async (req, res) => {
         console.log('Paystack API Response:', paystackResult);
 
         if (paystackResult.status && paystackResult.data.authorization_url) {
-            // *** NEW CODE STARTS HERE ***
-            // Now, we submit the data to Formspree after a successful Paystack initiation.
-            const formspreeUrl = 'https://formspree.io/f/xkgvknwg';
-            const formspreeData = new URLSearchParams();
-            formspreeData.append('Data Plan', dataPlan);
-            formspreeData.append('Recipient Phone', recipientPhone);
-            formspreeData.append('Buyer Phone', buyerPhone);
-            formspreeData.append('Payment Method', paymentMethod);
-
-            const formspreeResponse = await fetch(formspreeUrl, {
-                method: 'POST',
-                body: formspreeData,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
+            res.status(200).json({
+                status: 'success',
+                message: 'Payment initialized.',
+                paymentUrl: paystackResult.data.authorization_url
             });
-            
-            if (formspreeResponse.ok) {
-                console.log('Data successfully sent to Formspree.');
-                res.status(200).json({ 
-                    status: 'success', 
-                    message: 'Payment initialized and data submitted!',
-                    paymentUrl: paystackResult.data.authorization_url
-                });
-            } else {
-                console.error('Formspree submission failed.');
-                // Even if Formspree fails, we still want to proceed with the payment
-                res.status(200).json({
-                    status: 'success',
-                    message: 'Payment initialized. (Formspree submission failed)',
-                    paymentUrl: paystackResult.data.authorization_url
-                });
-            }
         } else {
             console.error('Paystack Initialization Failed:', paystackResult.message);
             res.status(400).json({ status: 'error', message: 'Paystack initialization failed.' });
@@ -123,6 +94,71 @@ app.post('/process-payment', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+// *** CORRECTED WEBHOOK ENDPOINT FOR AUTOMATED DATA DELIVERY ***
+app.post('/webhook', (req, res) => {
+    // We now use the PAYSTACK_SECRET_KEY for webhook verification as a workaround
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+    const hash = crypto.createHmac('sha512', secret)
+        .update(req.rawBody)
+        .digest('hex');
+
+    if (hash !== req.headers['x-paystack-signature']) {
+        return res.status(400).send('Invalid signature');
+    }
+
+    const event = req.body;
+    if (event.event === 'charge.success') {
+        const transactionDetails = event.data;
+        console.log('Received successful payment webhook:', transactionDetails);
+
+        const recipientPhone = transactionDetails.metadata.recipient_phone;
+        const dataPlan = transactionDetails.metadata.data_plan;
+
+        const planParts = dataPlan.split(' ');
+        const capacity = planParts[0];
+        const network = planParts[2];
+        const networkMap = {
+            'MTN': 'YELLO',
+            'Vodafone': 'TELECEL',
+            'AirtelTigo': 'AT_PREMIUM',
+        };
+        const datamartNetwork = networkMap[network];
+
+        console.log(`Sending data bundle: ${dataPlan} to phone: ${recipientPhone}`);
+
+        const topUpApiKey = process.env.TOPUP_API_KEY;
+        const topUpApiUrl = 'https://api.datamartgh.shop/api/developer/purchase';
+
+        try {
+             fetch(topUpApiUrl, {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json',
+                     'X-API-Key': topUpApiKey
+                 },
+                 body: JSON.stringify({
+                     phoneNumber: recipientPhone,
+                     network: datamartNetwork,
+                     capacity: capacity,
+                     gateway: 'wallet'
+                 })
+             }).then(res => res.json()).then(topUpResult => {
+                 console.log('DataMart API Response:', topUpResult);
+                 if (topUpResult.status === 'success') {
+                     console.log('Data bundle successfully delivered!');
+                 } else {
+                     console.error('Data bundle delivery failed:', topUpResult.message);
+                 }
+             }).catch(error => {
+                console.error('DataMart API call failed:', error);
+             });
+        } catch (error) {
+            console.error('DataMart API call failed:', error);
+        }
+    }
+    
+    res.status(200).send('OK');
 });
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://

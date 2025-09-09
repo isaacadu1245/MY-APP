@@ -26,11 +26,11 @@ app.post('/webhook', async (req, res) => {
     const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
     if (hash === req.headers['x-paystack-signature']) {
         const event = req.body;
-        
+
         // Process only if the payment was successful
         if (event.event === 'charge.success') {
             console.log('Payment was successful');
-            
+
             // Extract the necessary data from the Paystack webhook
             const transactionDetails = event.data;
             const customerEmail = transactionDetails.customer.email;
@@ -41,17 +41,32 @@ app.post('/webhook', async (req, res) => {
             const recipientNumber = transactionDetails.metadata.custom_fields.find(field => field.variable_name === 'recipient_number')?.value;
             const selectedPlan = transactionDetails.metadata.custom_fields.find(field => field.variable_name === 'selected_plan')?.value;
 
-            // --- DATA BUNDLE DELIVERY CONFIRMATION ---
-            // We are logging the transaction details for you to manually fulfill the order.
-            // This ensures no money is lost and no customer is left without their data.
-            
-            console.log('--- DATA BUNDLE DELIVERY REQUIRED ---');
-            console.log(`Plan: ${selectedPlan}`);
-            console.log(`Recipient Phone: ${recipientNumber}`);
-            console.log(`Transaction ID: ${reference}`);
-            console.log(`Customer Email: ${customerEmail}`);
-            console.log(`Amount Paid: GHC ${amount}`);
-            console.log('--- END OF DELIVERY CONFIRMATION ---');
+            // --- THIS IS THE NEW PART: SENDING DATA TO FORMSPREE ---
+            const formspreeUrl = 'https://formspree.io/f/xbjnyppd'; 
+
+            try {
+                const formspreeResponse = await fetch(formspreeUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plan: selectedPlan,
+                        phone_number: recipientNumber,
+                        email: customerEmail,
+                        amount: amount,
+                        transaction_id: reference
+                    })
+                });
+
+                if (formspreeResponse.ok) {
+                    console.log('Transaction details successfully sent to Formspree.');
+                } else {
+                    console.error('Failed to send transaction details to Formspree.');
+                }
+            } catch (error) {
+                console.error('Error sending data to Formspree:', error);
+            }
         }
     }
     // Acknowledge receipt of the webhook to Paystack
@@ -101,4 +116,3 @@ app.post('/initialize-payment', async (req, res) => {
 });
 
 module.exports = server;
-

@@ -30,8 +30,6 @@
         .mtn-card { border-color: #f7d100; border-width: 4px; border-style: solid; }
         .at-card { border-color: #3b82f6; border-width: 4px; border-style: solid; }
         .telecel-card { border-color: #ef4444; border-width: 4px; border-style: solid; }
-
-        /* Custom styles for the mobile money logos to be in the corners */
         .network-logo {
             position: absolute;
             top: 1rem;
@@ -76,6 +74,12 @@
             color: #cbd5e0;
             cursor: pointer;
         }
+        .message-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="bg-[#1a202c] min-h-screen flex flex-col items-center p-4">
@@ -100,20 +104,20 @@
                 <span class="network-logo mtn-logo"></span>
                 <h2 class="text-2xl font-bold text-[#f7d100] mb-4">MTN</h2>
                 <ul class="text-lg space-y-2">
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-1gb">1GB - GHC 7.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-2gb">2GB - GHC 11.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-3gb">3GB - GHC 16.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-4gb">4GB - GHC 22.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-5gb">5GB - GHC 26.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-6gb">6GB - GHC 31.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-8gb">8GB - GHC 41.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-10gb">10GB - GHC 50.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-15gb">15GB - GHC 72.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-20gb">20GB - GHC 90.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-25gb">25GB - GHC 110.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-30gb">30GB - GHC 135.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-40gb">40GB - GHC 173.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="mtn-50gb">50GB - GHC 212.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="1GB" data-price="7.00" data-network="MTN">1GB - GHC 7.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="2GB" data-price="11.00" data-network="MTN">2GB - GHC 11.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="3GB" data-price="16.00" data-network="MTN">3GB - GHC 16.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="4GB" data-price="22.00" data-network="MTN">4GB - GHC 22.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="5GB" data-price="26.00" data-network="MTN">5GB - GHC 26.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="6GB" data-price="31.00" data-network="MTN">6GB - GHC 31.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="8GB" data-price="41.00" data-network="MTN">8GB - GHC 41.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="10GB" data-price="50.00" data-network="MTN">10GB - GHC 50.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="15GB" data-price="72.00" data-network="MTN">15GB - GHC 72.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="20GB" data-price="90.00" data-network="MTN">20GB - GHC 90.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="25GB" data-price="110.00" data-network="MTN">25GB - GHC 110.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="30GB" data-price="135.00" data-network="MTN">30GB - GHC 135.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="40GB" data-price="173.00" data-network="MTN">40GB - GHC 173.00</li>
+                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="50GB" data-price="212.00" data-network="MTN">50GB - GHC 212.00</li>
                 </ul>
             </div>
 
@@ -121,15 +125,15 @@
                 <span class="network-logo at-logo"></span>
                 <h2 class="text-2xl font-bold text-[#3b82f6] mb-4">AT</h2>
                 <ul class="text-lg space-y-2">
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-1gb">1GB - GHC 6.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-2gb">2GB - GHC 10.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-3gb">3GB - GHC 14.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-4gb">4GB - GHC 18.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-5gb">5GB - GHC 22.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-6gb">6GB - GHC 26.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-8gb">8GB - GHC 34.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-10gb">10GB - GHC 42.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="at-12gb">12GB - GHC 49.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="1GB" data-price="6.00" data-network="AT">1GB - GHC 6.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="2GB" data-price="10.00" data-network="AT">2GB - GHC 10.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="3GB" data-price="14.00" data-network="AT">3GB - GHC 14.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="4GB" data-price="18.00" data-network="AT">4GB - GHC 18.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="5GB" data-price="22.00" data-network="AT">5GB - GHC 22.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="6GB" data-price="26.00" data-network="AT">6GB - GHC 26.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="8GB" data-price="34.00" data-network="AT">8GB - GHC 34.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="10GB" data-price="42.00" data-network="AT">10GB - GHC 42.00</li>
+                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="12GB" data-price="49.00" data-network="AT">12GB - GHC 49.00</li>
                 </ul>
             </div>
 
@@ -137,11 +141,11 @@
                 <span class="network-logo telecel-logo"></span>
                 <h2 class="text-2xl font-bold text-[#ef4444] mb-4">Telecel</h2>
                 <ul class="text-lg space-y-2">
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-5gb">5GB - GHC 26.00</li>
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-10gb">10GB - GHC 46.00</li>
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-20gb">20GB - GHC 81.00</li>
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-30gb">30GB - GHC 116.00</li>
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="telecel-40gb">40GB - GHC 156.00</li>
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="5GB" data-price="26.00" data-network="Telecel">5GB - GHC 26.00</li>
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="10GB" data-price="46.00" data-network="Telecel">10GB - GHC 46.00</li>
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="20GB" data-price="81.00" data-network="Telecel">20GB - GHC 81.00</li>
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="30GB" data-price="116.00" data-network="Telecel">30GB - GHC 116.00</li>
+                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="40GB" data-price="156.00" data-network="Telecel">40GB - GHC 156.00</li>
                 </ul>
             </div>
 
@@ -151,24 +155,16 @@
                     <p class="text-lg font-semibold text-gray-200">Selected Plan:</p>
                     <p id="selected-plan-text" class="text-yellow-400 font-bold text-xl mt-1"></p>
                 </div>
-               <form id="payment-form" class="space-y-4" method="POST" action="https://purchase-data-bundle.vercel.app/process-payment">
-                    <input type="hidden" name="Data Plan" id="hidden-plan-input">
+                <div id="message-box" class="message-box mt-4 hidden"></div>
+                
+                <form id="payment-form" class="space-y-4">
                     <div>
                         <label for="recipient-number" class="block text-gray-300">Recipient's Phone Number:</label>
-                        <input type="tel" name="Recipient Phone" id="recipient-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
+                        <input type="tel" name="recipient_number" id="recipient-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
                     </div>
                     <div>
-                        <label for="buyer-number" class="block text-gray-300">Your Phone Number (for payment):</label>
-                        <input type="tel" name="Buyer Phone" id="buyer-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
-                    </div>
-                    <div>
-                        <label for="payment-method" class="block text-gray-300">Select Payment Method:</label>
-                        <select name="Payment Method" id="payment-method" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" required>
-                            <option value="">-- Choose Method --</option>
-                            <option value="MTN Mobile Money">MTN Mobile Money</option>
-                            <option value="Telecel Cash">Telecel Cash</option>
-                            <option value="AT Money">AT Money</option>
-                        </select>
+                        <label for="email" class="block text-gray-300">Your Email (required for payment):</label>
+                        <input type="email" name="email" id="email" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., example@gmail.com" required>
                     </div>
                     <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md">Proceed to Payment</button>
                 </form>
@@ -202,119 +198,108 @@
     </footer>
 
     <script>
-    const plans = {
-        'mtn-1gb': { name: 'MTN 1GB', price: '7.00' },
-        'mtn-2gb': { name: 'MTN 2GB', price: '11.00' },
-        'mtn-3gb': { name: 'MTN 3GB', price: '16.00' },
-        'mtn-4gb': { name: 'MTN 4GB', price: '22.00' },
-        'mtn-5gb': { name: 'MTN 5GB', price: '26.00' },
-        'mtn-6gb': { name: 'MTN 6GB', price: '31.00' },
-        'mtn-8gb': { name: 'MTN 8GB', price: '41.00' },
-        'mtn-10gb': { name: 'MTN 10GB', price: '50.00' },
-        'mtn-15gb': { name: 'MTN 15GB', price: '72.00' },
-        'mtn-20gb': { name: 'MTN 20GB', price: '90.00' },
-        'mtn-25gb': { name: 'MTN 25GB', price: '110.00' },
-        'mtn-30gb': { name: 'MTN 30GB', price: '135.00' },
-        'mtn-40gb': { name: 'MTN 40GB', price: '173.00' },
-        'mtn-50gb': { name: 'MTN 50GB', price: '212.00' },
-        'at-1gb': { name: 'AT 1GB', price: '6.00' },
-        'at-2gb': { name: 'AT 2GB', price: '10.00' },
-        'at-3gb': { name: 'AT 3GB', price: '14.00' },
-        'at-4gb': { name: 'AT 4GB', price: '18.00' },
-        'at-5gb': { name: 'AT 5GB', price: '22.00' },
-        'at-6gb': { name: 'AT 6GB', price: '26.00' },
-        'at-8gb': { name: 'AT 8GB', price: '34.00' },
-        'at-10gb': { name: 'AT 10GB', price: '42.00' },
-        'at-12gb': { name: 'AT 12GB', price: '49.00' },
-        'telecel-5gb': { name: 'Telecel 5GB', price: '26.00' },
-        'telecel-10gb': { name: 'Telecel 10GB', price: '46.00' },
-        'telecel-20gb': { name: 'Telecel 20GB', price: '81.00' },
-        'telecel-30gb': { name: 'Telecel 30GB', price: '116.00' },
-        'telecel-40gb': { name: 'Telecel 40GB', price: '156.00' },
-    };
+        document.querySelectorAll('.network-card li').forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active state from all items
+                document.querySelectorAll('.network-card li').forEach(el => {
+                    el.classList.remove('bg-yellow-700', 'bg-red-700', 'bg-gray-600', 'ring-2', 'ring-offset-2', 'ring-offset-gray-700', 'bg-blue-700', 'ring-yellow-500', 'ring-blue-500', 'ring-red-400');
+                    el.classList.add('hover:bg-yellow-800', 'hover:bg-red-700', 'hover:bg-blue-800');
+                });
+                
+                // Add active state to the clicked item
+                const selectedNetwork = item.dataset.network;
+                const selectedPlan = item.dataset.plan;
+                const selectedPrice = item.dataset.price;
+                
+                if (selectedNetwork === 'MTN') {
+                    item.classList.add('bg-yellow-700', 'ring-yellow-500');
+                    item.classList.remove('hover:bg-yellow-800');
+                } else if (selectedNetwork === 'AT') {
+                    item.classList.add('bg-blue-700', 'ring-blue-500');
+                    item.classList.remove('hover:bg-blue-800');
+                } else if (selectedNetwork === 'Telecel') {
+                    item.classList.add('bg-red-700', 'ring-red-400');
+                    item.classList.remove('hover:bg-red-700');
+                }
+                item.classList.add('ring-2', 'ring-offset-2', 'ring-offset-gray-700');
 
-    let selectedPlanId = null;
+                // Update and show the form
+                const selectedPlanText = document.getElementById('selected-plan-text');
+                selectedPlanText.textContent = `${selectedNetwork} ${selectedPlan} - GHC ${selectedPrice}`;
+                
+                // We're now setting these values on the form itself to make it easier to submit
+                document.getElementById('transaction-form').dataset.plan = selectedPlan;
+                document.getElementById('transaction-form').dataset.price = selectedPrice;
+                document.getElementById('transaction-form').dataset.network = selectedNetwork;
 
-    document.querySelectorAll('.network-card li').forEach(item => {
-        item.addEventListener('click', () => {
-            // Remove active state from all items
-            document.querySelectorAll('.network-card li').forEach(el => {
-                el.classList.remove('bg-yellow-700', 'bg-red-700', 'bg-gray-600', 'ring-2', 'ring-offset-2', 'ring-offset-gray-700', 'bg-blue-700');
-                el.classList.add('hover:bg-yellow-800', 'hover:bg-red-800', 'hover:bg-gray-700', 'hover:bg-blue-800');
+                document.getElementById('transaction-form').classList.remove('hidden');
+                document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
             });
-            
-            // Add active state to the clicked item
-            selectedPlanId = item.dataset.plan;
-            const network = selectedPlanId.split('-')[0];
-            if (network === 'mtn') {
-                item.classList.add('bg-yellow-700');
-                item.classList.add('ring-yellow-500');
-                item.classList.remove('hover:bg-yellow-800');
-            } else if (network === 'at') {
-                item.classList.add('bg-blue-700');
-                item.classList.add('ring-blue-500');
-                item.classList.remove('hover:bg-blue-800');
-            } else if (network === 'telecel') {
-                item.classList.add('bg-red-700');
-                item.classList.add('ring-red-400');
-                item.classList.remove('hover:bg-red-700');
-            }
-            item.classList.add('ring-2', 'ring-offset-2', 'ring-offset-gray-700');
-
-            // Update and show the form
-            const selectedPlanText = document.getElementById('selected-plan-text');
-            selectedPlanText.textContent = `${plans[selectedPlanId].name} for GHC ${plans[selectedPlanId].price}`;
-            
-            // Update the hidden input field with the selected plan's details
-            document.getElementById('hidden-plan-input').value = `${plans[selectedPlanId].name} - GHC ${plans[selectedPlanId].price}`;
-            
-            document.getElementById('transaction-form').classList.remove('hidden');
-            document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
         });
-    });
 
-    document.getElementById('payment-form').addEventListener('submit', async (event) => {
-        // Prevent the default form submission (so we can handle it with fetch)
-        event.preventDefault();
+        document.getElementById('payment-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
 
-        // Show a loading message to the user
-        const submitButton = document.querySelector('button[type="submit"]');
-        submitButton.textContent = 'Processing...';
-        submitButton.disabled = true;
+            const form = event.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const messageBox = document.getElementById('message-box');
+            
+            // Get data from the form and the parent container
+            const email = form.querySelector('#email').value;
+            const recipientNumber = form.querySelector('#recipient-number').value;
+            const price = document.getElementById('transaction-form').dataset.price;
+            const plan = document.getElementById('transaction-form').dataset.plan;
 
-        const formData = new FormData(event.target);
+            // Prepare the payload for the server
+            const payload = {
+                amount: price,
+                email: email,
+                recipientNumber: recipientNumber,
+                plan: plan,
+            };
 
-        try {
-            const response = await fetch('https://purchase-data-bundle.vercel.app/process-payment', {
-                method: 'POST',
-                body: new URLSearchParams(formData)
-            });
+            // Show a loading state
+            submitButton.textContent = 'Processing...';
+            submitButton.disabled = true;
+            messageBox.textContent = '';
+            messageBox.classList.add('hidden');
 
-            const data = await response.json();
+            try {
+                // The fetch request points to your Vercel server's new endpoint
+                const response = await fetch('/initialize-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
 
-            if (data.status === 'success') {
-                // The server successfully initiated the Paystack transaction
-                window.location.href = data.paymentUrl; // Redirect to Paystack's payment page
-            } else {
-                // The server sent an error message
-                alert(`Error: ${data.message}`);
+                const data = await response.json();
+
+                if (data.status) {
+                    // Paystack transaction initialized successfully, redirect to the payment URL
+                    window.location.href = data.data.authorization_url;
+                } else {
+                    // An error occurred on the server
+                    messageBox.textContent = `Error: ${data.message}`;
+                    messageBox.classList.remove('hidden');
+                    messageBox.classList.add('bg-red-500');
+                }
+            } catch (error) {
+                console.error('Network or Server Error:', error);
+                messageBox.textContent = 'Something went wrong. Please check your internet connection.';
+                messageBox.classList.remove('hidden');
+                messageBox.classList.add('bg-red-500');
+            } finally {
+                // Restore the button state
                 submitButton.textContent = 'Proceed to Payment';
                 submitButton.disabled = false;
             }
-        } catch (error) {
-            console.error('Network Error:', error);
-            alert('Something went wrong. Please check your internet connection and try again.');
-            submitButton.textContent = 'Proceed to Payment';
-            submitButton.disabled = false;
+        });
+        
+        function closeModal() {
+            document.getElementById('message-modal').classList.add('hidden');
         }
-    });
+    </script>
+</body>
+</html>
 
-    function showModal(title, message) {
-        // This function is no longer needed but kept for reference.
-        // The new code handles errors with an alert and success by redirecting.
-    }
 
-    function closeModal() {
-        // This function is no longer needed.
-    }
-</script>

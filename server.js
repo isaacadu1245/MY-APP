@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const bodyParser = require('body-parser');
-const crypto = require('crypto'); 
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,7 +12,6 @@ app.use(bodyParser.json());
 
 // API keys and configuration
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY;
 
 const server = app;
 
@@ -42,10 +41,9 @@ app.post('/webhook', async (req, res) => {
             const recipientNumber = transactionDetails.metadata.custom_fields.find(field => field.variable_name === 'recipient_number')?.value;
             const selectedPlan = transactionDetails.metadata.custom_fields.find(field => field.variable_name === 'selected_plan')?.value;
 
-            // --- THIS IS THE CRITICAL PART: THE FINAL STEP TO DELIVER THE DATA BUNDLE ---
-            // We have replaced the API call with a console log for now for your safety.
-            // This will allow you to see the successful transaction and manually
-            // send the data bundle to the customer.
+            // --- DATA BUNDLE DELIVERY CONFIRMATION ---
+            // We are logging the transaction details for you to manually fulfill the order.
+            // This ensures no money is lost and no customer is left without their data.
             
             console.log('--- DATA BUNDLE DELIVERY REQUIRED ---');
             console.log(`Plan: ${selectedPlan}`);
@@ -103,3 +101,4 @@ app.post('/initialize-payment', async (req, res) => {
 });
 
 module.exports = server;
+

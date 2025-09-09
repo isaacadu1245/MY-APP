@@ -43,38 +43,17 @@ app.post('/webhook', async (req, res) => {
             const selectedPlan = transactionDetails.metadata.custom_fields.find(field => field.variable_name === 'selected_plan')?.value;
 
             // --- THIS IS THE CRITICAL PART: THE FINAL STEP TO DELIVER THE DATA BUNDLE ---
-            // Replace this placeholder with your actual logic to connect to your DataMart Dashboard
+            // We have replaced the API call with a console log for now for your safety.
+            // This will allow you to see the successful transaction and manually
+            // send the data bundle to the customer.
             
-            console.log(`Sending a request to transfer ${selectedPlan} to ${recipientNumber}...`);
-
-            try {
-                // The URL below is a placeholder. You need to use your DataMart's real URL.
-                // The 'body' is also a placeholder. You need to use the data format
-                // required by your DataMart's API.
-                
-                const response = await fetch('YOUR_DATAMART_API_ENDPOINT_HERE', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // You might need an API key or other authentication here
-                        // 'Authorization': 'Bearer YOUR_API_KEY',
-                    },
-                    body: JSON.stringify({
-                        recipient: recipientNumber,
-                        plan: selectedPlan,
-                        transactionId: reference,
-                    }),
-                });
-
-                if (response.ok) {
-                    console.log(`Data bundle transfer successful for ${recipientNumber}!`);
-                    // This is where you would get a confirmation that the data was sent
-                } else {
-                    console.error(`Failed to transfer data bundle. Status: ${response.status}`);
-                }
-            } catch (error) {
-                console.error('Error during data bundle transfer:', error);
-            }
+            console.log('--- DATA BUNDLE DELIVERY REQUIRED ---');
+            console.log(`Plan: ${selectedPlan}`);
+            console.log(`Recipient Phone: ${recipientNumber}`);
+            console.log(`Transaction ID: ${reference}`);
+            console.log(`Customer Email: ${customerEmail}`);
+            console.log(`Amount Paid: GHC ${amount}`);
+            console.log('--- END OF DELIVERY CONFIRMATION ---');
         }
     }
     // Acknowledge receipt of the webhook to Paystack

@@ -11,8 +11,8 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #1a202c; /* Dark background */
-            color: #e2e8f0; /* Light text */
+            background-color: #1a202c;
+            color: #e2e8f0;
         }
         .container {
             max-width: 900px;
@@ -100,6 +100,7 @@
 
         <div id="main-content" class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
 
+            <!-- MTN -->
             <div class="network-card relative mtn-card p-6">
                 <span class="network-logo mtn-logo"></span>
                 <h2 class="text-2xl font-bold text-[#f7d100] mb-4">MTN</h2>
@@ -107,48 +108,30 @@
                     <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="1GB" data-price="7.00" data-network="MTN">1GB - GHC 7.00</li>
                     <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="2GB" data-price="11.00" data-network="MTN">2GB - GHC 11.00</li>
                     <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="3GB" data-price="16.00" data-network="MTN">3GB - GHC 16.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="4GB" data-price="22.00" data-network="MTN">4GB - GHC 22.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="5GB" data-price="26.00" data-network="MTN">5GB - GHC 26.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="6GB" data-price="31.00" data-network="MTN">6GB - GHC 31.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="8GB" data-price="41.00" data-network="MTN">8GB - GHC 41.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="10GB" data-price="50.00" data-network="MTN">10GB - GHC 50.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="15GB" data-price="72.00" data-network="MTN">15GB - GHC 72.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="20GB" data-price="90.00" data-network="MTN">20GB - GHC 90.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="25GB" data-price="110.00" data-network="MTN">25GB - GHC 110.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="30GB" data-price="135.00" data-network="MTN">30GB - GHC 135.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="40GB" data-price="173.00" data-network="MTN">40GB - GHC 173.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="50GB" data-price="212.00" data-network="MTN">50GB - GHC 212.00</li>
                 </ul>
             </div>
 
+            <!-- AT -->
             <div class="network-card relative at-card p-6">
                 <span class="network-logo at-logo"></span>
                 <h2 class="text-2xl font-bold text-[#3b82f6] mb-4">AT</h2>
                 <ul class="text-lg space-y-2">
                     <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="1GB" data-price="6.00" data-network="AT">1GB - GHC 6.00</li>
                     <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="2GB" data-price="10.00" data-network="AT">2GB - GHC 10.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="3GB" data-price="14.00" data-network="AT">3GB - GHC 14.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="4GB" data-price="18.00" data-network="AT">4GB - GHC 18.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="5GB" data-price="22.00" data-network="AT">5GB - GHC 22.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="6GB" data-price="26.00" data-network="AT">6GB - GHC 26.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="8GB" data-price="34.00" data-network="AT">8GB - GHC 34.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="10GB" data-price="42.00" data-network="AT">10GB - GHC 42.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="12GB" data-price="49.00" data-network="AT">12GB - GHC 49.00</li>
                 </ul>
             </div>
 
+            <!-- Telecel -->
             <div class="network-card relative telecel-card p-6">
                 <span class="network-logo telecel-logo"></span>
                 <h2 class="text-2xl font-bold text-[#ef4444] mb-4">Telecel</h2>
                 <ul class="text-lg space-y-2">
                     <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="5GB" data-price="26.00" data-network="Telecel">5GB - GHC 26.00</li>
                     <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="10GB" data-price="46.00" data-network="Telecel">10GB - GHC 46.00</li>
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="20GB" data-price="81.00" data-network="Telecel">20GB - GHC 81.00</li>
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="30GB" data-price="116.00" data-network="Telecel">30GB - GHC 116.00</li>
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="40GB" data-price="156.00" data-network="Telecel">40GB - GHC 156.00</li>
                 </ul>
             </div>
 
+            <!-- Transaction Form -->
             <div id="transaction-form" class="hidden md:col-span-3 lg:col-span-3 bg-gray-700 p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 text-white">Purchase Data Bundle</h2>
                 <div class="mb-4">
@@ -163,8 +146,8 @@
                         <input type="tel" name="recipient_number" id="recipient-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
                     </div>
                     <div>
-                        <label for="email" class="block text-gray-300">Your Email (required for payment):</label>
-                        <input type="email" name="email" id="email" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., example@gmail.com" required>
+                        <label for="buyer-number" class="block text-gray-300">Buyer’s Phone Number (for payment):</label>
+                        <input type="tel" name="buyer_number" id="buyer-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0249876543" required>
                     </div>
                     <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md">Proceed to Payment</button>
                 </form>
@@ -172,20 +155,21 @@
 
         </div>
 
+        <!-- Notice -->
         <div class="w-full max-w-6xl mt-8 p-4 md:p-8 bg-gray-800 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between">
             <div class="text-center md:text-left mb-4 md:mb-0">
                 <h3 class="text-xl font-bold text-white mb-2">Important Notice</h3>
                 <ul class="text-sm text-gray-400 space-y-1">
-                    <li>• Data bundle delivery is not instant. Some numbers may receive data faster while others take some time.</li>
-                    <li>• No refunds will be issued for wrong transactions or incorrect phone numbers.</li>
-                    <li>• Please verify your phone number carefully before making a purchase.</li>
+                    <li>• Data bundle delivery is not instant.</li>
+                    <li>• No refunds for wrong transactions.</li>
+                    <li>• Verify your phone number carefully before purchase.</li>
                 </ul>
             </div>
             <div class="text-center md:text-right">
                 <p class="text-sm font-semibold text-gray-400">Mon-Sun: 8AM - 9PM</p>
                 <div class="mt-2 text-white">
                     <a href="tel:0205306718" class="flex items-center justify-center md:justify-end text-2xl font-bold hover:text-yellow-500 transition-colors duration-200">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.774a11.537 11.537 0 003.886 3.886l.774-1.548a1 1 0 011.06-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.774a11.537 11.537 0 003.886 3.886l.774-1.548a1 1 0 011.06-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
                         0205306718
                     </a>
                 </div>
@@ -200,38 +184,19 @@
     <script>
         document.querySelectorAll('.network-card li').forEach(item => {
             item.addEventListener('click', () => {
-                // Remove active state from all items
                 document.querySelectorAll('.network-card li').forEach(el => {
-                    el.classList.remove('bg-yellow-700', 'bg-red-700', 'bg-gray-600', 'ring-2', 'ring-offset-2', 'ring-offset-gray-700', 'bg-blue-700', 'ring-yellow-500', 'ring-blue-500', 'ring-red-400');
-                    el.classList.add('hover:bg-yellow-800', 'hover:bg-red-700', 'hover:bg-blue-800');
+                    el.classList.remove('bg-yellow-700','bg-red-700','bg-blue-700','ring-2','ring-offset-2');
                 });
-                
-                // Add active state to the clicked item
                 const selectedNetwork = item.dataset.network;
                 const selectedPlan = item.dataset.plan;
                 const selectedPrice = item.dataset.price;
-                
-                if (selectedNetwork === 'MTN') {
-                    item.classList.add('bg-yellow-700', 'ring-yellow-500');
-                    item.classList.remove('hover:bg-yellow-800');
-                } else if (selectedNetwork === 'AT') {
-                    item.classList.add('bg-blue-700', 'ring-blue-500');
-                    item.classList.remove('hover:bg-blue-800');
-                } else if (selectedNetwork === 'Telecel') {
-                    item.classList.add('bg-red-700', 'ring-red-400');
-                    item.classList.remove('hover:bg-red-700');
-                }
-                item.classList.add('ring-2', 'ring-offset-2', 'ring-offset-gray-700');
-
-                // Update and show the form
-                const selectedPlanText = document.getElementById('selected-plan-text');
-                selectedPlanText.textContent = `${selectedNetwork} ${selectedPlan} - GHC ${selectedPrice}`;
-                
-                // We're now setting these values on the form itself to make it easier to submit
+                if (selectedNetwork === 'MTN') item.classList.add('bg-yellow-700','ring-2');
+                if (selectedNetwork === 'AT') item.classList.add('bg-blue-700','ring-2');
+                if (selectedNetwork === 'Telecel') item.classList.add('bg-red-700','ring-2');
+                document.getElementById('selected-plan-text').textContent = `${selectedNetwork} ${selectedPlan} - GHC ${selectedPrice}`;
                 document.getElementById('transaction-form').dataset.plan = selectedPlan;
                 document.getElementById('transaction-form').dataset.price = selectedPrice;
                 document.getElementById('transaction-form').dataset.network = selectedNetwork;
-
                 document.getElementById('transaction-form').classList.remove('hidden');
                 document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
             });
@@ -239,46 +204,36 @@
 
         document.getElementById('payment-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-
             const form = event.target;
             const submitButton = form.querySelector('button[type="submit"]');
             const messageBox = document.getElementById('message-box');
-            
-            // Get data from the form and the parent container
-            const email = form.querySelector('#email').value;
+            const buyerNumber = form.querySelector('#buyer-number').value;
             const recipientNumber = form.querySelector('#recipient-number').value;
             const price = document.getElementById('transaction-form').dataset.price;
             const plan = document.getElementById('transaction-form').dataset.plan;
 
-            // Prepare the payload for the server
             const payload = {
                 amount: price,
-                email: email,
+                buyerNumber: buyerNumber,
                 recipientNumber: recipientNumber,
                 plan: plan,
             };
 
-            // Show a loading state
             submitButton.textContent = 'Processing...';
             submitButton.disabled = true;
             messageBox.textContent = '';
             messageBox.classList.add('hidden');
 
             try {
-                // The fetch request points to your Vercel server's new endpoint
                 const response = await fetch('/initialize-payment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                 });
-
                 const data = await response.json();
-
                 if (data.status) {
-                    // Paystack transaction initialized successfully, redirect to the payment URL
                     window.location.href = data.data.authorization_url;
                 } else {
-                    // An error occurred on the server
                     messageBox.textContent = `Error: ${data.message}`;
                     messageBox.classList.remove('hidden');
                     messageBox.classList.add('bg-red-500');
@@ -289,17 +244,14 @@
                 messageBox.classList.remove('hidden');
                 messageBox.classList.add('bg-red-500');
             } finally {
-                // Restore the button state
                 submitButton.textContent = 'Proceed to Payment';
                 submitButton.disabled = false;
             }
         });
-        
+
         function closeModal() {
             document.getElementById('message-modal').classList.add('hidden');
         }
     </script>
 </body>
 </html>
-
-

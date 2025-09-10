@@ -1,17 +1,15 @@
 const express = require('express');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
-const cors = require('cors'); // Added the cors import
+const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-app.use(cors()); // Use the cors middleware
+app.use(cors());
 
 // Load environment variables.
-// NOTE: For local development, you should use a .env file and a library like `dotenv`.
-// In production on Vercel, these are set in the dashboard.
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const DATAMART_API_KEY = process.env.DATAMART_API_KEY;
 const DATAMART_API_URL = process.env.DATAMART_API_URL;
@@ -20,7 +18,7 @@ const ADMIN_EMAIL_PASSWORD = process.env.ADMIN_EMAIL_PASSWORD;
 
 // --- Email Transporter Configuration ---
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // You can use other services or an SMTP server
+    service: 'gmail',
     auth: {
         user: ADMIN_EMAIL,
         pass: ADMIN_EMAIL_PASSWORD
@@ -34,8 +32,8 @@ async function sendDataBundle(recipientNumber, dataAmount, network) {
         const payload = {
             api_key: DATAMART_API_KEY,
             recipient_number: recipientNumber,
-            amount: dataAmount, // Now sending the data amount
-            network: network // Assuming network names match DataMart's requirements
+            amount: dataAmount,
+            network: network
         };
 
         const response = await axios.post(DATAMART_API_URL, payload, {
@@ -91,8 +89,8 @@ app.post('/initialize-payment', async (req, res) => {
                 recipientNumber,
                 buyerNumber,
                 network,
-                planName, // Use the new key
-                dataAmount // Store the data amount in metadata
+                planName,
+                dataAmount
             }
         }, {
             headers: {

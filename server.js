@@ -26,13 +26,13 @@ const transporter = nodemailer.createTransport({
 });
 
 // --- Data Bundle Delivery Logic ---
-async function sendDataBundle(recipientNumber, amount, network) {
-    console.log(`Attempting to send ${amount} data to ${recipientNumber} on ${network} via DataMart.`);
+async function sendDataBundle(recipientNumber, dataAmount, network) {
+    console.log(`Attempting to send ${dataAmount}GB data to ${recipientNumber} on ${network} via DataMart.`);
     try {
         const payload = {
             api_key: DATAMART_API_KEY,
             recipient_number: recipientNumber,
-            amount: amount,
+            amount: dataAmount, // Now sending the data amount
             network: network // Assuming network names match DataMart's requirements
         };
 
@@ -74,7 +74,7 @@ async function sendNotificationEmail(toEmail, subject, text) {
 // --- Paystack Initialization Endpoint ---
 app.post('/initialize-payment', async (req, res) => {
     try {
-        const { amount, email, plan, recipientNumber, buyerNumber, network } = req.body;
+        const { amount, email, planName, recipientNumber, buyerNumber, network, dataAmount } = req.body;
 
         if (!amount || !email) {
             return res.status(400).json({ message: 'Amount and email are required.' });
@@ -83,11 +83,12 @@ app.post('/initialize-payment', async (req, res) => {
         const response = await axios.post('https://api.paystack.co/transaction/initialize', {
             email: email,
             amount: amount,
-            plan: plan,
             metadata: {
                 recipientNumber,
                 buyerNumber,
-                network
+                network,
+                planName, // Use the new key
+                dataAmount // Store the data amount in metadata
             }
         }, {
             headers: {
@@ -118,16 +119,16 @@ app.get('/verify-payment/:reference', async (req, res) => {
 
         const data = response.data.data;
         if (data.status === 'success') {
-            const { recipientNumber, plan, network } = data.metadata;
+            const { recipientNumber, planName, network, dataAmount } = data.metadata;
             const amountInCedi = data.amount / 100;
 
             // Step 1: Send the data bundle
-            const dataDeliveryResult = await sendDataBundle(recipientNumber, amountInCedi, network);
+            const dataDeliveryResult = await sendDataBundle(recipientNumber, dataAmount, network);
 
             // Step 2: Send a notification email to the admin
-            const emailSubject = `New Data Purchase: ${plan} to ${recipientNumber}`;
+            const emailSubject = `New Data Purchase: ${planName} to ${recipientNumber}`;
             const emailText = `A new data bundle has been purchased.\n\n`
-                + `Plan: ${plan}\n`
+                + `Plan: ${planName}\n`
                 + `Amount: GHC ${amountInCedi}\n`
                 + `Recipient Number: ${recipientNumber}\n`
                 + `Buyer's Number: ${data.metadata.buyerNumber}\n`

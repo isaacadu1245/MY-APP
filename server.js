@@ -1,68 +1,158 @@
-const express = require("express");
-const cors = require("cors");
-const fetch = require("node-fetch");
-const bodyParser = require("body-parser");
-const crypto = require("crypto");
-
+const express = require('express');
+const axios = require('axios');
+const nodemailer = require('nodemailer');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(bodyParser.json());
+// Middleware to parse JSON bodies
+app.use(express.json());
 
+// Load environment variables.
+// NOTE: For local development, you should use a .env file and a library like `dotenv`.
+// In production on Vercel, these are set in the dashboard.
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-const DATAMART_API_URL = process.env.DATAMART_API_URL || "https://api.datamart.shop/buy";
 const DATAMART_API_KEY = process.env.DATAMART_API_KEY;
+const DATAMART_API_URL = process.env.DATAMART_API_URL;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_EMAIL_PASSWORD = process.env.ADMIN_EMAIL_PASSWORD;
 
-// --- Simple check route ---
-app.get("/", (req, res) => {
-  res.send("Server is running!");
-});
-
-// --- Initialize Paystack Payment ---
-app.post("/initialize-payment", async (req, res) => {
-  const { amount, buyerNumber, recipientNumber, plan, network } = req.body;
-
-  const url = "https://api.paystack.co/transaction/initialize";
-  const body = {
-    amount: amount * 100, // Paystack expects kobo (cents)
-    email: `${buyerNumber}@bangerhitz.app`, // Fake email for Paystack since we’re using phone
-    metadata: {
-      custom_fields: [
-        { display_name: "Recipient Phone", variable_name: "recipient_number", value: recipientNumber },
-        { display_name: "Selected Plan", variable_name: "selected_plan", value: plan },
-        { display_name: "Selected Network", variable_name: "selected_network", value: network },
-        { display_name: "Buyer Number", variable_name: "buyer_number", value: buyerNumber }
-      ]
+// --- Email Transporter Configuration ---
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // You can use other services or an SMTP server
+    auth: {
+        user: ADMIN_EMAIL,
+        pass: ADMIN_EMAIL_PASSWORD
     }
-  };
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-      },
-      body: JSON.stringify(body),
-    });
-
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (error) {
-    console.error("Error initializing payment:", error);
-    res.status(500).json({ error: "Failed to initialize payment" });
-  }
 });
 
-// --- Paystack Webhook ---
-app.post("/webhook", async (req, res) => {
-  const hash = crypto.createHmac("sha512", PAYSTACK_SECRET_KEY)
-    .update(JSON.stringify(req.body))
-    .digest("hex");
+// --- Data Bundle Delivery Logic ---
+async function sendDataBundle(recipientNumber, amount, network) {
+    console.log(`Attempting to send ${amount} data to ${recipientNumber} on ${network} via DataMart.`);
+    try {
+        const payload = {
+            api_key: DATAMART_API_KEY,
+            recipient_number: recipientNumber,
+            amount: amount,
+            network: network // Assuming network names match DataMart's requirements
+        };
 
-  if (hash === req.headers["x-paystack-signature"]) {
-    const event = req.body;
+        const response = await axios.post(DATAMART_API_URL, payload, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
 
-    if (event.event === "charge.success") {
-      console.log("✅ Payment su
+        if (response.data.status === 'success') {
+            console.log('Data bundle sent successfully:', response.data);
+            return { success: true, message: 'Data bundle sent successfully.' };
+        } else {
+            console.error('Data bundle delivery failed:', response.data);
+            return { success: false, message: response.data.message || 'Data bundle delivery failed.' };
+        }
+    } catch (error) {
+        console.error('Error sending data bundle:', error.response?.data || error.message);
+        return { success: false, message: 'An error occurred during data bundle delivery.' };
+    }
+}
+
+// --- Email Notification Logic ---
+async function sendNotificationEmail(toEmail, subject, text) {
+    try {
+        const mailOptions = {
+            from: ADMIN_EMAIL,
+            to: toEmail,
+            subject: subject,
+            text: text
+        };
+        await transporter.sendMail(mailOptions);
+        console.log('Notification email sent successfully.');
+    } catch (error) {
+        console.error('Error sending notification email:', error.message);
+    }
+}
+
+// --- Paystack Initialization Endpoint ---
+app.post('/initialize-payment', async (req, res) => {
+    try {
+        const { amount, email, plan, recipientNumber, buyerNumber, network } = req.body;
+
+        if (!amount || !email) {
+            return res.status(400).json({ message: 'Amount and email are required.' });
+        }
+
+        const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+            email: email,
+            amount: amount,
+            plan: plan,
+            metadata: {
+                recipientNumber,
+                buyerNumber,
+                network
+            }
+        }, {
+            headers: {
+                'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        res.status(200).json(response.data);
+
+    } catch (error) {
+        console.error('Error initializing payment:', error.response?.data || error.message);
+        res.status(500).json({ message: 'An error occurred while initializing payment.' });
+    }
+});
+
+// --- Paystack Verification Endpoint ---
+app.get('/verify-payment/:reference', async (req, res) => {
+    try {
+        const { reference } = req.params;
+
+        const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
+            headers: {
+                'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = response.data.data;
+        if (data.status === 'success') {
+            const { recipientNumber, plan, network } = data.metadata;
+            const amountInCedi = data.amount / 100;
+
+            // Step 1: Send the data bundle
+            const dataDeliveryResult = await sendDataBundle(recipientNumber, amountInCedi, network);
+
+            // Step 2: Send a notification email to the admin
+            const emailSubject = `New Data Purchase: ${plan} to ${recipientNumber}`;
+            const emailText = `A new data bundle has been purchased.\n\n`
+                + `Plan: ${plan}\n`
+                + `Amount: GHC ${amountInCedi}\n`
+                + `Recipient Number: ${recipientNumber}\n`
+                + `Buyer's Number: ${data.metadata.buyerNumber}\n`
+                + `Network: ${network}\n`
+                + `Paystack Reference: ${reference}\n`
+                + `DataMart Delivery Status: ${dataDeliveryResult.message}`;
+            
+            await sendNotificationEmail(ADMIN_EMAIL, emailSubject, emailText);
+
+            // Respond to the client
+            res.status(200).json({ message: 'Payment verified, and transaction processed.', deliveryStatus: dataDeliveryResult.message });
+        } else {
+            res.status(400).json({ message: 'Payment verification failed.' });
+        }
+    } catch (error) {
+        console.error('Error verifying payment:', error.response?.data || error.message);
+        res.status(500).json({ message: 'An error occurred while verifying payment.' });
+    }
+});
+
+// A simple endpoint to serve your HTML file
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+});

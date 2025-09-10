@@ -1,13 +1,14 @@
 const express = require('express');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
-const cors = require('cors');
+const dotenv = require('dotenv');
+
+dotenv.config(); // Load environment variables from .env file
+
 const app = express();
-const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-app.use(cors());
 
 // Load environment variables.
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
@@ -154,9 +155,8 @@ app.get('/verify-payment/:reference', async (req, res) => {
 
 // A simple endpoint to serve your HTML file
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/index.html');
 });
 
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+// Export the Express app as a serverless function
+module.exports = app;

@@ -33,15 +33,15 @@ app.post('/webhook', async (req, res) => {
 
             // Extract the necessary data from the Paystack webhook
             const transactionDetails = event.data;
-            const customerEmail = transactionDetails.customer.email;
             const amount = transactionDetails.amount / 100; // Convert back to GHC
             const reference = transactionDetails.reference;
 
             // Extract the custom metadata you sent earlier
+            const buyerNumber = transactionDetails.metadata.custom_fields.find(field => field.variable_name === 'buyer_number')?.value;
             const recipientNumber = transactionDetails.metadata.custom_fields.find(field => field.variable_name === 'recipient_number')?.value;
             const selectedPlan = transactionDetails.metadata.custom_fields.find(field => field.variable_name === 'selected_plan')?.value;
 
-            // --- THIS IS THE NEW PART: SENDING DATA TO FORMSPREE ---
+            // --- SEND DATA TO FORMSPREE (optional) ---
             const formspreeUrl = 'https://formspree.io/f/xbjnyppd'; 
 
             try {
@@ -52,8 +52,8 @@ app.post('/webhook', async (req, res) => {
                     },
                     body: JSON.stringify({
                         plan: selectedPlan,
-                        phone_number: recipientNumber,
-                        email: customerEmail,
+                        buyer_phone: buyerNumber,
+                        recipient_phone: recipientNumber,
                         amount: amount,
                         transaction_id: reference
                     })
@@ -75,14 +75,22 @@ app.post('/webhook', async (req, res) => {
 
 // Route to handle payment initialization
 app.post('/initialize-payment', async (req, res) => {
-    const { amount, email, recipientNumber, plan } = req.body;
+    const { amount, buyerNumber, recipientNumber, plan } = req.body;
+
+    // Paystack requires an email, so we create a dummy one from buyer's number
+    const dummyEmail = `${buyerNumber}@buyer.bangerhitz.com`;
 
     const url = 'https://api.paystack.co/transaction/initialize';
     const body = {
-        amount: amount * 100, // Paystack amount is in kobo (cents)
-        email: email,
+        amount: amount * 100, // Paystack expects kobo (or pesewas)
+        email: dummyEmail,
         metadata: {
             custom_fields: [
+                {
+                    display_name: "Buyer Phone",
+                    variable_name: "buyer_number",
+                    value: buyerNumber
+                },
                 {
                     display_name: "Recipient Phone",
                     variable_name: "recipient_number",
@@ -116,3 +124,10 @@ app.post('/initialize-payment', async (req, res) => {
 });
 
 module.exports = server;
+
+// Start server if run directly
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}

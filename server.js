@@ -1,11 +1,13 @@
 const express = require('express');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
+const cors = require('cors'); // Added the cors import
 const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors()); // Use the cors middleware
 
 // Load environment variables.
 // NOTE: For local development, you should use a .env file and a library like `dotenv`.

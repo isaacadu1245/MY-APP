@@ -6,103 +6,57 @@
   <title>Bangerhitz Digital Media</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans">
-  <main class="p-6 max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold text-center text-yellow-400">Bangerhitz Digital Media</h1>
-    <p class="text-center mb-6">Affordable No-Expiry Data Plans</p>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-4">
 
-    <!-- Plans -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-gray-800 p-4 rounded-lg">
-        <h2 class="text-yellow-400 text-xl font-bold mb-2">MTN</h2>
-        <ul>
-          <li class="cursor-pointer hover:bg-yellow-700 p-2 rounded" data-plan="1GB" data-price="7" data-network="MTN">1GB - GHC 7</li>
-          <li class="cursor-pointer hover:bg-yellow-700 p-2 rounded" data-plan="5GB" data-price="26" data-network="MTN">5GB - GHC 26</li>
-        </ul>
-      </div>
+  <header class="text-center mb-6">
+    <h1 class="text-3xl font-bold text-yellow-400">Bangerhitz Digital Media</h1>
+    <p class="text-lg text-gray-300">Affordable No Expiry Data Plans</p>
+  </header>
 
-      <div class="bg-gray-800 p-4 rounded-lg">
-        <h2 class="text-blue-400 text-xl font-bold mb-2">AT</h2>
-        <ul>
-          <li class="cursor-pointer hover:bg-blue-700 p-2 rounded" data-plan="1GB" data-price="6" data-network="AT">1GB - GHC 6</li>
-        </ul>
-      </div>
-
-      <div class="bg-gray-800 p-4 rounded-lg">
-        <h2 class="text-red-400 text-xl font-bold mb-2">Telecel</h2>
-        <ul>
-          <li class="cursor-pointer hover:bg-red-700 p-2 rounded" data-plan="5GB" data-price="26" data-network="Telecel">5GB - GHC 26</li>
-        </ul>
-      </div>
+  <main class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6">
+    
+    <!-- MTN -->
+    <div class="bg-gray-800 p-4 rounded-lg">
+      <h2 class="text-xl font-bold text-yellow-400 mb-2">MTN</h2>
+      <ul>
+        <li class="cursor-pointer hover:bg-yellow-700 p-2 rounded"
+          data-plan="1GB" data-price="10" data-network="MTN">1GB - GHC 10</li>
+        <li class="cursor-pointer hover:bg-yellow-700 p-2 rounded"
+          data-plan="2GB" data-price="18" data-network="MTN">2GB - GHC 18</li>
+      </ul>
     </div>
 
-    <!-- Payment Form -->
-    <div id="transaction-form" class="hidden mt-8 bg-gray-800 p-6 rounded-lg">
-      <h2 class="text-xl font-bold mb-4">Purchase Data Bundle</h2>
-      <p id="selected-plan-text" class="text-yellow-400 mb-4"></p>
+    <!-- AT -->
+    <div class="bg-gray-800 p-4 rounded-lg">
+      <h2 class="text-xl font-bold text-blue-400 mb-2">AT</h2>
+      <ul>
+        <li class="cursor-pointer hover:bg-blue-700 p-2 rounded"
+          data-plan="1GB" data-price="9" data-network="AT">1GB - GHC 9</li>
+        <li class="cursor-pointer hover:bg-blue-700 p-2 rounded"
+          data-plan="2GB" data-price="15" data-network="AT">2GB - GHC 15</li>
+      </ul>
+    </div>
 
-      <form id="payment-form" class="space-y-4">
-        <div>
-          <label class="block">Your Phone Number (Buyer):</label>
-          <input type="tel" id="buyer-number" class="w-full p-2 rounded bg-gray-700 border border-gray-600" required>
-        </div>
-        <div>
-          <label class="block">Recipient’s Phone Number:</label>
-          <input type="tel" id="recipient-number" class="w-full p-2 rounded bg-gray-700 border border-gray-600" required>
-        </div>
-        <button type="submit" class="w-full bg-yellow-500 text-black font-bold py-3 rounded">Proceed to Payment</button>
-      </form>
-      <div id="message-box" class="mt-4 hidden p-2 rounded"></div>
+    <!-- Telecel -->
+    <div class="bg-gray-800 p-4 rounded-lg">
+      <h2 class="text-xl font-bold text-red-400 mb-2">Telecel</h2>
+      <ul>
+        <li class="cursor-pointer hover:bg-red-700 p-2 rounded"
+          data-plan="1GB" data-price="8" data-network="Telecel">1GB - GHC 8</li>
+      </ul>
     </div>
   </main>
 
-  <script>
-    let selectedPlan = null;
-    let selectedPrice = null;
-    let selectedNetwork = null;
+  <!-- Form -->
+  <section id="transaction-form" class="hidden bg-gray-800 mt-6 p-4 rounded-lg w-full max-w-md">
+    <h2 class="text-xl font-bold mb-2">Purchase Data</h2>
+    <p id="selected-plan-text" class="mb-2 text-yellow-400"></p>
 
-    document.querySelectorAll("li[data-plan]").forEach(item => {
-      item.addEventListener("click", () => {
-        selectedPlan = item.dataset.plan;
-        selectedPrice = item.dataset.price;
-        selectedNetwork = item.dataset.network;
+    <form id="payment-form">
+      <label class="block mb-2">Recipient Number:</label>
+      <input type="tel" id="recipient-number" required
+        class="w-full mb-3 p-2 rounded bg-gray-700">
 
-        document.getElementById("selected-plan-text").textContent =
-          `${selectedNetwork} ${selectedPlan} - GHC ${selectedPrice}`;
-        document.getElementById("transaction-form").classList.remove("hidden");
-        document.getElementById("transaction-form").scrollIntoView({ behavior: "smooth" });
-      });
-    });
-
-    document.getElementById("payment-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const buyerNumber = document.getElementById("buyer-number").value;
-      const recipientNumber = document.getElementById("recipient-number").value;
-
-      const payload = {
-        amount: selectedPrice,
-        buyerNumber,
-        recipientNumber,
-        plan: `${selectedNetwork} ${selectedPlan}`
-      };
-
-      const response = await fetch("/initialize-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (data.status) {
-        window.location.href = data.data.authorization_url;
-      } else {
-        const msgBox = document.getElementById("message-box");
-        msgBox.textContent = "Payment initialization failed.";
-        msgBox.classList.remove("hidden");
-        msgBox.classList.add("bg-red-500");
-      }
-    });
-  </script>
-</body>
-</html>
+      <label class="block mb-2">Buyer Phone:</label>
+      <input type="tel" id="buyer-phone" required
+        class="w-full mb

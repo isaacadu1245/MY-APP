@@ -1,140 +1,112 @@
 from flask import Flask, request, jsonify
 import requests
-import hmac
 import hashlib
-import smtplib
-from email.mime.text import MIMEText
+import hmac
 import os
 
 app = Flask(__name__)
 
-# 🔑 Environment variables
+# Environment variables
 PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
-ADMIN_EMAIL_PASSWORD = os.getenv("ADMIN_EMAIL_PASSWORD")  # Gmail app password
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-
-
-def send_email(subject, body, to_email):
-    """Send an email via SMTP"""
-    try:
-        msg = MIMEText(body)
-        msg["Subject"] = subject
-        msg["From"] = ADMIN_EMAIL
-        msg["To"] = to_email
-
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(ADMIN_EMAIL, ADMIN_EMAIL_PASSWORD)
-            server.sendmail(ADMIN_EMAIL, [to_email], msg.as_string())
-            print(f"📧 Email sent to {to_email}")
-    except Exception as e:
-        print(f"❌ Error sending email: {e}")
-
+DATAMART_API_URL = os.getenv("DATAMART_API_URL", "https://api.datamart.shop/buy")
+DATAMART_API_KEY = os.getenv("DATAMART_API_KEY")
 
 @app.route("/", methods=["GET"])
 def home():
-    return "Flask Paystack Server is running!"
+    return "🚀 Python server is running!"
 
-
+# --- Initialize Paystack Payment ---
 @app.route("/initialize-payment", methods=["POST"])
 def initialize_payment():
-    data = request.json
-    amount = data.get("amount")
-    buyer_number = data.get("buyerNumber")
-    recipient_number = data.get("recipientNumber")
-    plan = data.get("plan")
-
-    # Paystack requires email → generate dummy email from buyer number
-    dummy_email = f"{buyer_number}@buyer.bangerhitz.com"
-
-    url = "https://api.paystack.co/transaction/initialize"
-    headers = {
-        "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}",
-        "Content-Type": "application/json"
-    }
-    body = {
-        "amount": amount * 100,  # Paystack uses kobo/pesewas
-        "email": dummy_email,
-        "metadata": {
-            "custom_fields": [
-                {"display_name": "Buyer Phone", "variable_name": "buyer_number", "value": buyer_number},
-                {"display_name": "Recipient Phone", "variable_name": "recipient_number", "value": recipient_number},
-                {"display_name": "Selected Plan", "variable_name": "selected_plan", "value": plan}
-            ]
-        }
-    }
-
     try:
-        response = requests.post(url, headers=headers, json=body)
+        data = request.get_json()
+        amount = data.get("amount")
+        buyer_number = data.get("buyerNumber")
+        recipient_number = data.get("recipientNumber")
+        plan = data.get("plan")
+        network = data.get("network")
+
+        url = "https://api.paystack.co/transaction/initialize"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}"
+        }
+        body = {
+            "amount": amount * 100,  # Paystack expects kobo
+            "email": f"{buyer_number}@bangerhitz.app",
+            "metadata": {
+                "custom_fields": [
+                    {"display_name": "Recipient Phone", "variable_name": "recipient_number", "value": recipient_number},
+                    {"display_name": "Selected Plan", "variable_name": "selected_plan", "value": plan},
+                    {"display_name": "Selected Network", "variable_name": "selected_network", "value": network},
+                    {"display_name": "Buyer Number", "variable_name": "buyer_number", "value": buyer_number}
+                ]
+            }
+        }
+
+        response = requests.post(url, json=body, headers=headers)
         return jsonify(response.json()), response.status_code
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
+# --- Paystack Webhook ---
 @app.route("/webhook", methods=["POST"])
-def paystack_webhook():
-    signature = request.headers.get("x-paystack-signature")
-    payload = request.get_data()
+def webhook():
+    try:
+        payload = request.get_data()
+        signature = request.headers.get("x-paystack-signature")
 
-    # ✅ Verify webhook signature
-    expected_signature = hmac.new(
-        PAYSTACK_SECRET_KEY.encode(),
-        payload,
-        hashlib.sha512
-    ).hexdigest()
+        # Verify webhook signature
+        hash_value = hmac.new(
+            PAYSTACK_SECRET_KEY.encode("utf-8"),
+            payload,
+            hashlib.sha512
+        ).hexdigest()
 
-    if signature != expected_signature:
-        return jsonify({"error": "Invalid signature"}), 400
+        if hash_value != signature:
+            return "Invalid signature", 400
 
-    event = request.json
-    if event.get("event") == "charge.success":
-        tx_data = event["data"]
-        amount = tx_data["amount"] / 100
-        reference = tx_data["reference"]
+        event = request.get_json()
 
-        buyer_number = None
-        recipient_number = None
-        selected_plan = None
+        if event["event"] == "charge.success":
+            print("✅ Payment successful from Paystack")
 
-        for field in tx_data["metadata"]["custom_fields"]:
-            if field["variable_name"] == "buyer_number":
-                buyer_number = field["value"]
-            elif field["variable_name"] == "recipient_number":
-                recipient_number = field["value"]
-            elif field["variable_name"] == "selected_plan":
-                selected_plan = field["value"]
+            transaction_details = event["data"]
+            reference = transaction_details["reference"]
 
-        # --- Email Notifications ---
-        # Admin email
-        admin_msg = f"""
-        ✅ New Payment Received
+            custom_fields = transaction_details["metadata"]["custom_fields"]
+            recipient_number = next((f["value"] for f in custom_fields if f["variable_name"] == "recipient_number"), None)
+            selected_plan = next((f["value"] for f in custom_fields if f["variable_name"] == "selected_plan"), None)
+            selected_network = next((f["value"] for f in custom_fields if f["variable_name"] == "selected_network"), None)
 
-        Plan: {selected_plan}
-        Recipient: {recipient_number}
-        Buyer: {buyer_number}
-        Amount: {amount} GHS
-        Transaction ID: {reference}
-        """
-        send_email("New Payment Received", admin_msg, ADMIN_EMAIL)
+            # --- Call DataMart API ---
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {DATAMART_API_KEY}"
+            }
+            body = {
+                "network": selected_network,
+                "plan": selected_plan,
+                "recipient": recipient_number
+            }
 
-        # Buyer receipt
-        buyer_email = f"{buyer_number}@buyer.bangerhitz.com"
-        buyer_msg = f"""
-        🎉 Thank you for your purchase!
+            try:
+                datamart_response = requests.post(DATAMART_API_URL, json=body, headers=headers)
+                datamart_data = datamart_response.json()
 
-        Your data bundle has been successfully paid.
+                if datamart_data.get("status") == "success":
+                    print(f"✅ DataMart bundle delivered: {selected_plan} to {recipient_number}")
+                else:
+                    print("❌ Failed to deliver bundle via DataMart:", datamart_data)
 
-        Plan: {selected_plan}
-        Recipient: {recipient_number}
-        Amount: {amount} GHS
-        Transaction ID: {reference}
-        """
-        send_email("Payment Receipt - BangerHitz", buyer_msg, buyer_email)
+            except Exception as e:
+                print("🔥 Error calling DataMart API:", str(e))
 
-    return jsonify({"status": "success"}), 200
+        return "OK", 200
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(port=3000, debug=True)
+    app.run(port=int(os.getenv("PORT", 3000)), debug=True)

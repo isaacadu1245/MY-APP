@@ -76,6 +76,8 @@ app.post('/initialize-payment', async (req, res) => {
     try {
         const { amount, email, planName, recipientNumber, buyerNumber, network, dataAmount } = req.body;
 
+        console.log('Received request to initialize payment with:', req.body);
+
         if (!amount || !email) {
             return res.status(400).json({ message: 'Amount and email are required.' });
         }
@@ -97,11 +99,12 @@ app.post('/initialize-payment', async (req, res) => {
             }
         });
 
+        console.log('Paystack response:', response.data);
         res.status(200).json(response.data);
 
     } catch (error) {
-        console.error('Error initializing payment:', error.response?.data || error.message);
-        res.status(500).json({ message: 'An error occurred while initializing payment.' });
+        console.error('Error initializing payment:', error.response?.data?.message || error.message);
+        res.status(500).json({ message: error.response?.data?.message || 'An error occurred while initializing payment.' });
     }
 });
 

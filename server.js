@@ -1,9 +1,9 @@
-const express = require('express');
-const cors = require('cors');
-const fetch = require('node-fetch');
-const bodyParser = require('body-parser');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const express = require("express");
+const cors = require("cors");
+const fetch = require("node-fetch");
+const bodyParser = require("body-parser");
+const crypto = require("crypto");
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,93 +12,40 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-const ADMIN_EMAIL_PASSWORD = process.env.ADMIN_EMAIL_PASSWORD;
+const DATAMART_API_KEY = process.env.DATAMART_API_KEY;
+const DATAMART_API_URL = process.env.DATAMART_API_URL; // e.g. https://api.datamart.com/buy
 
-// Email transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: ADMIN_EMAIL,
-    pass: ADMIN_EMAIL_PASSWORD
-  }
-});
+// 🔹 Mapping: Plan → Datamart Code
+const datamartPlans = {
+  "1GB": "DM001",
+  "2GB": "DM002"
+};
 
-// Server check
-app.get('/', (req, res) => res.send('Server is running!'));
-
-// Webhook from Paystack
-app.post('/webhook', async (req, res) => {
-  const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY)
-    .update(JSON.stringify(req.body))
-    .digest('hex');
-
-  if (hash === req.headers['x-paystack-signature']) {
-    const event = req.body;
-
-    if (event.event === 'charge.success') {
-      const tx = event.data;
-      const amount = tx.amount / 100;
-      const reference = tx.reference;
-
-      const buyerNumber = tx.metadata.custom_fields.find(f => f.variable_name === 'buyer_number')?.value;
-      const recipientNumber = tx.metadata.custom_fields.find(f => f.variable_name === 'recipient_number')?.value;
-      const selectedPlan = tx.metadata.custom_fields.find(f => f.variable_name === 'selected_plan')?.value;
-
-      // Send email to Admin
-      try {
-        await transporter.sendMail({
-          from: `"BangerHitz App" <${ADMIN_EMAIL}>`,
-          to: ADMIN_EMAIL,
-          subject: "New Payment Received",
-          text: `✅ Payment Received\n\nPlan: ${selectedPlan}\nRecipient: ${recipientNumber}\nBuyer: ${buyerNumber}\nAmount: ${amount} GHS\nReference: ${reference}`
-        });
-        console.log("Admin notified.");
-      } catch (err) {
-        console.error("Admin email error:", err);
-      }
-
-      // Send email to Buyer
-      try {
-        await transporter.sendMail({
-          from: `"BangerHitz App" <${ADMIN_EMAIL}>`,
-          to: `${buyerNumber}@buyer.bangerhitz.com`, // fake email using phone
-          subject: "Your Data Bundle Purchase",
-          text: `Hello,\n\nYour payment was successful!\nPlan: ${selectedPlan}\nRecipient: ${recipientNumber}\nAmount: ${amount} GHS\nTransaction Ref: ${reference}\n\nThanks for using BangerHitz Digital Media.`
-        });
-        console.log("Buyer notified.");
-      } catch (err) {
-        console.error("Buyer email error:", err);
-      }
-    }
-  }
-  res.sendStatus(200);
-});
+// Health check
+app.get("/", (req, res) => res.send("Server running"));
 
 // Initialize payment
-app.post('/initialize-payment', async (req, res) => {
-  const { amount, buyerNumber, recipientNumber, plan } = req.body;
-  const dummyEmail = `${buyerNumber}@buyer.bangerhitz.com`;
+app.post("/initialize-payment", async (req, res) => {
+  const { amount, buyerPhone, recipientNumber, plan } = req.body;
 
-  const url = 'https://api.paystack.co/transaction/initialize';
   const body = {
     amount: amount * 100,
-    email: dummyEmail,
+    email: `${buyerPhone}@bangerhitz.com`, // Paystack requires email
     metadata: {
       custom_fields: [
-        { display_name: "Buyer Phone", variable_name: "buyer_number", value: buyerNumber },
         { display_name: "Recipient Phone", variable_name: "recipient_number", value: recipientNumber },
+        { display_name: "Buyer Phone", variable_name: "buyer_phone", value: buyerPhone },
         { display_name: "Selected Plan", variable_name: "selected_plan", value: plan }
       ]
     }
   };
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
+    const response = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(body)
     });
@@ -106,9 +53,48 @@ app.post('/initialize-payment', async (req, res) => {
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (err) {
-    console.error("Init payment error:", err);
-    res.status(500).json({ error: "Failed to initialize payment" });
+    console.error(err);
+    res.status(500).json({ message: "Payment init failed" });
   }
+});
+
+// Webhook
+app.post("/webhook", async (req, res) => {
+  const hash = crypto.createHmac("sha512", PAYSTACK_SECRET_KEY)
+    .update(JSON.stringify(req.body)).digest("hex");
+
+  if (hash === req.headers["x-paystack-signature"]) {
+    const event = req.body;
+
+    if (event.event === "charge.success") {
+      const plan = event.data.metadata.custom_fields.find(f => f.variable_name === "selected_plan").value;
+      const recipient = event.data.metadata.custom_fields.find(f => f.variable_name === "recipient_number").value;
+
+      const datamartCode = datamartPlans[plan];
+      if (datamartCode) {
+        try {
+          const dmRes = await fetch(DATAMART_API_URL, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${DATAMART_API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              planCode: datamartCode,
+              phoneNumber: recipient
+            })
+          });
+
+          const dmData = await dmRes.json();
+          console.log("Datamart Response:", dmData);
+        } catch (err) {
+          console.error("Datamart error:", err);
+        }
+      }
+    }
+  }
+
+  res.sendStatus(200);
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -77,6 +77,18 @@
             color: #cbd5e0;
             cursor: pointer;
         }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #f7d100;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-[#1a202c] min-h-screen flex flex-col items-center p-4">
@@ -177,7 +189,10 @@
                             <option value="at_money">AT Money</option>
                         </select>
                     </div>
-                    <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md">Proceed to Payment</button>
+                    <button type="submit" id="submit-button" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md flex items-center justify-center">
+                        <span id="button-text">Proceed to Payment</span>
+                        <div id="loading-spinner" class="spinner ml-2 hidden"></div>
+                    </button>
                 </form>
             </div>
 
@@ -274,8 +289,25 @@
             });
         });
 
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        function showLoading() {
+            buttonText.textContent = 'Loading...';
+            loadingSpinner.classList.remove('hidden');
+            submitButton.disabled = true;
+        }
+
+        function hideLoading() {
+            buttonText.textContent = 'Proceed to Payment';
+            loadingSpinner.classList.add('hidden');
+            submitButton.disabled = false;
+        }
+
         document.getElementById('payment-form').addEventListener('submit', async (event) => {
             event.preventDefault();
+            showLoading();
 
             recipientPhoneNumber = document.getElementById('recipient-number').value;
             buyerPhoneNumber = document.getElementById('buyer-number').value;
@@ -284,43 +316,55 @@
             if (selectedPlanId && buyerPhoneNumber && recipientPhoneNumber && paymentMethod) {
                 const planDetails = plans[selectedPlanId];
                 const amountInCedi = parseFloat(planDetails.price);
-                const dataAmount = planDetails.dataAmount; // Get the data amount
+                const dataAmount = planDetails.dataAmount;
 
-                const response = await fetch('/initialize-payment', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: `${buyerPhoneNumber}@bangerhitz.com`,
-                        amount: amountInCedi * 100,
-                        planName: planDetails.name, // Changed to planName for clarity
-                        recipientNumber: recipientPhoneNumber,
-                        buyerNumber: buyerPhoneNumber,
-                        network: paymentMethod,
-                        dataAmount: dataAmount // Send the data amount to the backend
-                    }),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    const paystack = new Paystack();
-                    paystack.pay({
-                        authorization_url: data.data.authorization_url,
-                        access_code: data.data.access_code,
-                        reference: data.data.reference,
-                        onClose: () => {
-                            showModal('Payment Cancelled', 'You have closed the payment process. Please try again.');
+                try {
+                    const response = await fetch('/initialize-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
                         },
-                        onSuccess: (response) => {
-                            showModal('Success!', 'Payment successful. Your data bundle will be delivered shortly.');
-                        },
+                        body: JSON.stringify({
+                            email: `${buyerPhoneNumber}@bangerhitz.com`,
+                            amount: amountInCedi * 100,
+                            planName: planDetails.name,
+                            recipientNumber: recipientPhoneNumber,
+                            buyerNumber: buyerPhoneNumber,
+                            network: paymentMethod,
+                            dataAmount: dataAmount
+                        }),
                     });
-                } else {
-                    showModal('Error', data.message || 'Payment initialization failed. Please try again.');
+
+                    const data = await response.json();
+                    console.log('Server response:', data);
+
+                    if (response.ok) {
+                        const paystack = new Paystack();
+                        paystack.pay({
+                            authorization_url: data.data.authorization_url,
+                            access_code: data.data.access_code,
+                            reference: data.data.reference,
+                            onClose: () => {
+                                hideLoading();
+                                showModal('Payment Cancelled', 'You have closed the payment process. Please try again.');
+                            },
+                            onSuccess: (response) => {
+                                hideLoading();
+                                showModal('Success!', 'Payment successful. Your data bundle will be delivered shortly.');
+                            },
+                        });
+                    } else {
+                        hideLoading();
+                        showModal('Error', data.message || 'Payment initialization failed. Please try again.');
+                    }
+                } catch (error) {
+                    hideLoading();
+                    console.error('Fetch error:', error);
+                    showModal('Error', 'A network error occurred. Please check your internet connection or try again later.');
                 }
+
             } else {
+                hideLoading();
                 showModal('Error', 'Please select a plan and fill in all the details.');
             }
         });

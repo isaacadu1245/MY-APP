@@ -1,257 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bangerhitz Digital Media</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #1a202c;
-            color: #e2e8f0;
-        }
-        .container {
-            max-width: 900px;
-        }
-        .network-card {
-            background-color: #2d3748;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease-in-out;
-            cursor: pointer;
-        }
-        .network-card:hover {
-            transform: translateY(-5px);
-        }
-        .mtn-card { border-color: #f7d100; border-width: 4px; border-style: solid; }
-        .at-card { border-color: #3b82f6; border-width: 4px; border-style: solid; }
-        .telecel-card { border-color: #ef4444; border-width: 4px; border-style: solid; }
-        .network-logo {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 50px;
-            height: 50px;
-            background-size: contain;
-            background-repeat: no-repeat;
-        }
-        .mtn-logo { background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/MTN_Logo.svg'); }
-        .at-logo { background-image: url('https://upload.wikimedia.org/wikipedia/commons/2/23/AirtelTigo_Logo.svg'); }
-        .telecel-logo { background-image: url('https://upload.wikimedia.org/wikipedia/en/thumb/5/52/Telecel_Group_logo.svg/1200px-Telecel_Group_logo.svg.png'); }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal {
-            background-color: #2d3748;
-            padding: 2rem;
-            border-radius: 1rem;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-        .close-button {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: #cbd5e0;
-            cursor: pointer;
-        }
-        .message-box {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bangerhitz Digital Media</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#1a202c] min-h-screen flex flex-col items-center p-4">
+<body class="bg-gray-900 text-white font-sans">
+  <main class="p-6 max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-center text-yellow-400">Bangerhitz Digital Media</h1>
+    <p class="text-center mb-6">Affordable No-Expiry Data Plans</p>
 
-    <div id="message-modal" class="modal-overlay hidden">
-        <div class="modal">
-            <button class="close-button" onclick="closeModal()">×</button>
-            <h2 id="modal-title" class="text-2xl font-bold mb-4"></h2>
-            <p id="modal-message" class="text-gray-300"></p>
-        </div>
+    <!-- Plans -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-gray-800 p-4 rounded-lg">
+        <h2 class="text-yellow-400 text-xl font-bold mb-2">MTN</h2>
+        <ul>
+          <li class="cursor-pointer hover:bg-yellow-700 p-2 rounded" data-plan="1GB" data-price="7" data-network="MTN">1GB - GHC 7</li>
+          <li class="cursor-pointer hover:bg-yellow-700 p-2 rounded" data-plan="5GB" data-price="26" data-network="MTN">5GB - GHC 26</li>
+        </ul>
+      </div>
+
+      <div class="bg-gray-800 p-4 rounded-lg">
+        <h2 class="text-blue-400 text-xl font-bold mb-2">AT</h2>
+        <ul>
+          <li class="cursor-pointer hover:bg-blue-700 p-2 rounded" data-plan="1GB" data-price="6" data-network="AT">1GB - GHC 6</li>
+        </ul>
+      </div>
+
+      <div class="bg-gray-800 p-4 rounded-lg">
+        <h2 class="text-red-400 text-xl font-bold mb-2">Telecel</h2>
+        <ul>
+          <li class="cursor-pointer hover:bg-red-700 p-2 rounded" data-plan="5GB" data-price="26" data-network="Telecel">5GB - GHC 26</li>
+        </ul>
+      </div>
     </div>
 
-    <main class="w-full flex-grow flex flex-col items-center">
-        <header class="text-center p-6 w-full">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-[#f7d100] tracking-wide">BANGERHITZ DIGITAL MEDIA</h1>
-            <p class="text-lg sm:text-xl font-semibold text-white mt-2">BEST AFFORDABLE NO EXPIRY DATA PLANS FOR ALL NETWORKS</p>
-        </header>
+    <!-- Payment Form -->
+    <div id="transaction-form" class="hidden mt-8 bg-gray-800 p-6 rounded-lg">
+      <h2 class="text-xl font-bold mb-4">Purchase Data Bundle</h2>
+      <p id="selected-plan-text" class="text-yellow-400 mb-4"></p>
 
-        <div id="main-content" class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
-
-            <!-- MTN -->
-            <div class="network-card relative mtn-card p-6">
-                <span class="network-logo mtn-logo"></span>
-                <h2 class="text-2xl font-bold text-[#f7d100] mb-4">MTN</h2>
-                <ul class="text-lg space-y-2">
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="1GB" data-price="7.00" data-network="MTN">1GB - GHC 7.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="2GB" data-price="11.00" data-network="MTN">2GB - GHC 11.00</li>
-                    <li class="p-2 rounded-md hover:bg-yellow-800 transition-colors duration-200" data-plan="3GB" data-price="16.00" data-network="MTN">3GB - GHC 16.00</li>
-                </ul>
-            </div>
-
-            <!-- AT -->
-            <div class="network-card relative at-card p-6">
-                <span class="network-logo at-logo"></span>
-                <h2 class="text-2xl font-bold text-[#3b82f6] mb-4">AT</h2>
-                <ul class="text-lg space-y-2">
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="1GB" data-price="6.00" data-network="AT">1GB - GHC 6.00</li>
-                    <li class="p-2 rounded-md hover:bg-blue-800 transition-colors duration-200" data-plan="2GB" data-price="10.00" data-network="AT">2GB - GHC 10.00</li>
-                </ul>
-            </div>
-
-            <!-- Telecel -->
-            <div class="network-card relative telecel-card p-6">
-                <span class="network-logo telecel-logo"></span>
-                <h2 class="text-2xl font-bold text-[#ef4444] mb-4">Telecel</h2>
-                <ul class="text-lg space-y-2">
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="5GB" data-price="26.00" data-network="Telecel">5GB - GHC 26.00</li>
-                    <li class="p-2 rounded-md hover:bg-red-700 transition-colors duration-200" data-plan="10GB" data-price="46.00" data-network="Telecel">10GB - GHC 46.00</li>
-                </ul>
-            </div>
-
-            <!-- Transaction Form -->
-            <div id="transaction-form" class="hidden md:col-span-3 lg:col-span-3 bg-gray-700 p-6 rounded-2xl shadow-lg">
-                <h2 class="text-2xl font-bold mb-4 text-white">Purchase Data Bundle</h2>
-                <div class="mb-4">
-                    <p class="text-lg font-semibold text-gray-200">Selected Plan:</p>
-                    <p id="selected-plan-text" class="text-yellow-400 font-bold text-xl mt-1"></p>
-                </div>
-                <div id="message-box" class="message-box mt-4 hidden"></div>
-                
-                <form id="payment-form" class="space-y-4">
-                    <div>
-                        <label for="recipient-number" class="block text-gray-300">Recipient's Phone Number:</label>
-                        <input type="tel" name="recipient_number" id="recipient-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
-                    </div>
-                    <div>
-                        <label for="buyer-number" class="block text-gray-300">Buyer’s Phone Number (for payment):</label>
-                        <input type="tel" name="buyer_number" id="buyer-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0249876543" required>
-                    </div>
-                    <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md">Proceed to Payment</button>
-                </form>
-            </div>
-
+      <form id="payment-form" class="space-y-4">
+        <div>
+          <label class="block">Your Phone Number (Buyer):</label>
+          <input type="tel" id="buyer-number" class="w-full p-2 rounded bg-gray-700 border border-gray-600" required>
         </div>
-
-        <!-- Notice -->
-        <div class="w-full max-w-6xl mt-8 p-4 md:p-8 bg-gray-800 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between">
-            <div class="text-center md:text-left mb-4 md:mb-0">
-                <h3 class="text-xl font-bold text-white mb-2">Important Notice</h3>
-                <ul class="text-sm text-gray-400 space-y-1">
-                    <li>• Data bundle delivery is not instant.</li>
-                    <li>• No refunds for wrong transactions.</li>
-                    <li>• Verify your phone number carefully before purchase.</li>
-                </ul>
-            </div>
-            <div class="text-center md:text-right">
-                <p class="text-sm font-semibold text-gray-400">Mon-Sun: 8AM - 9PM</p>
-                <div class="mt-2 text-white">
-                    <a href="tel:0205306718" class="flex items-center justify-center md:justify-end text-2xl font-bold hover:text-yellow-500 transition-colors duration-200">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.774a11.537 11.537 0 003.886 3.886l.774-1.548a1 1 0 011.06-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
-                        0205306718
-                    </a>
-                </div>
-            </div>
+        <div>
+          <label class="block">Recipient’s Phone Number:</label>
+          <input type="tel" id="recipient-number" class="w-full p-2 rounded bg-gray-700 border border-gray-600" required>
         </div>
-    </main>
+        <button type="submit" class="w-full bg-yellow-500 text-black font-bold py-3 rounded">Proceed to Payment</button>
+      </form>
+      <div id="message-box" class="mt-4 hidden p-2 rounded"></div>
+    </div>
+  </main>
 
-    <footer class="text-center mt-8 text-gray-500 text-xs">
-        &copy; 2023 Bangerhitz Digital Media. All rights reserved.
-    </footer>
+  <script>
+    let selectedPlan = null;
+    let selectedPrice = null;
+    let selectedNetwork = null;
 
-    <script>
-        document.querySelectorAll('.network-card li').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.network-card li').forEach(el => {
-                    el.classList.remove('bg-yellow-700','bg-red-700','bg-blue-700','ring-2','ring-offset-2');
-                });
-                const selectedNetwork = item.dataset.network;
-                const selectedPlan = item.dataset.plan;
-                const selectedPrice = item.dataset.price;
-                if (selectedNetwork === 'MTN') item.classList.add('bg-yellow-700','ring-2');
-                if (selectedNetwork === 'AT') item.classList.add('bg-blue-700','ring-2');
-                if (selectedNetwork === 'Telecel') item.classList.add('bg-red-700','ring-2');
-                document.getElementById('selected-plan-text').textContent = `${selectedNetwork} ${selectedPlan} - GHC ${selectedPrice}`;
-                document.getElementById('transaction-form').dataset.plan = selectedPlan;
-                document.getElementById('transaction-form').dataset.price = selectedPrice;
-                document.getElementById('transaction-form').dataset.network = selectedNetwork;
-                document.getElementById('transaction-form').classList.remove('hidden');
-                document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
-            });
-        });
+    document.querySelectorAll("li[data-plan]").forEach(item => {
+      item.addEventListener("click", () => {
+        selectedPlan = item.dataset.plan;
+        selectedPrice = item.dataset.price;
+        selectedNetwork = item.dataset.network;
 
-        document.getElementById('payment-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const form = event.target;
-            const submitButton = form.querySelector('button[type="submit"]');
-            const messageBox = document.getElementById('message-box');
-            const buyerNumber = form.querySelector('#buyer-number').value;
-            const recipientNumber = form.querySelector('#recipient-number').value;
-            const price = document.getElementById('transaction-form').dataset.price;
-            const plan = document.getElementById('transaction-form').dataset.plan;
+        document.getElementById("selected-plan-text").textContent =
+          `${selectedNetwork} ${selectedPlan} - GHC ${selectedPrice}`;
+        document.getElementById("transaction-form").classList.remove("hidden");
+        document.getElementById("transaction-form").scrollIntoView({ behavior: "smooth" });
+      });
+    });
 
-            const payload = {
-                amount: price,
-                buyerNumber: buyerNumber,
-                recipientNumber: recipientNumber,
-                plan: plan,
-            };
+    document.getElementById("payment-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-            submitButton.textContent = 'Processing...';
-            submitButton.disabled = true;
-            messageBox.textContent = '';
-            messageBox.classList.add('hidden');
+      const buyerNumber = document.getElementById("buyer-number").value;
+      const recipientNumber = document.getElementById("recipient-number").value;
 
-            try {
-                const response = await fetch('/initialize-payment', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-                const data = await response.json();
-                if (data.status) {
-                    window.location.href = data.data.authorization_url;
-                } else {
-                    messageBox.textContent = `Error: ${data.message}`;
-                    messageBox.classList.remove('hidden');
-                    messageBox.classList.add('bg-red-500');
-                }
-            } catch (error) {
-                console.error('Network or Server Error:', error);
-                messageBox.textContent = 'Something went wrong. Please check your internet connection.';
-                messageBox.classList.remove('hidden');
-                messageBox.classList.add('bg-red-500');
-            } finally {
-                submitButton.textContent = 'Proceed to Payment';
-                submitButton.disabled = false;
-            }
-        });
+      const payload = {
+        amount: selectedPrice,
+        buyerNumber,
+        recipientNumber,
+        plan: `${selectedNetwork} ${selectedPlan}`
+      };
 
-        function closeModal() {
-            document.getElementById('message-modal').classList.add('hidden');
-        }
-    </script>
+      const response = await fetch("/initialize-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (data.status) {
+        window.location.href = data.data.authorization_url;
+      } else {
+        const msgBox = document.getElementById("message-box");
+        msgBox.textContent = "Payment initialization failed.";
+        msgBox.classList.remove("hidden");
+        msgBox.classList.add("bg-red-500");
+      }
+    });
+  </script>
 </body>
 </html>

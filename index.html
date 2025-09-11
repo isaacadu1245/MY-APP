@@ -94,7 +94,7 @@
 </head>
 <body class="bg-[#1a202c] min-h-screen flex flex-col items-center p-4">
 
-    <!-- Modal for messages and PIN entry -->
+    <!-- Modal for messages -->
     <div id="message-modal" class="modal-overlay hidden">
         <div class="modal">
             <button class="close-button" onclick="closeModal()">×</button>
@@ -263,9 +263,8 @@
         let buyerPhoneNumber = null;
         let recipientPhoneNumber = null;
 
-        // ** IMPORTANT: Replace with your actual Paystack Public Key and Formspree URL **
-        const PAYSTACK_PUBLIC_KEY = 'pk_live_e0c3ea6685b93e31d4f7f3121413dbf031b20bc1'; // Replace with your key
-        const FORMSPREE_URL = 'https://formspree.io/f/xkgvknwg'; // Replace with your endpoint
+        // !!! IMPORTANT: THIS KEY IS PUBLIC AND SAFE TO USE ON THE FRONTEND !!!
+        const PAYSTACK_PUBLIC_KEY = 'pk_live_e0c3ea6685b93e31d4f7f3121413dbf031b20bc1';
 
         document.querySelectorAll('.network-card li').forEach(item => {
             item.addEventListener('click', () => {
@@ -313,17 +312,16 @@
 
             if (selectedPlanId && buyerPhoneNumber && recipientPhoneNumber && paymentMethod) {
                 const planDetails = plans[selectedPlanId];
-                const amountInKobo = planDetails.price * 100; // Paystack uses Kobo/Pesewas
+                const amountInKobo = planDetails.price * 100;
 
                 showModal('Processing...', 'Redirecting to payment. Please wait.', true);
 
-                // Initialize Paystack with transaction details
                 const handler = PaystackPop.setup({
                     key: PAYSTACK_PUBLIC_KEY,
-                    email: `user+${buyerPhoneNumber}@example.com`, // Paystack requires a valid email. Using a dummy one for now.
+                    email: `user+${buyerPhoneNumber}@example.com`,
                     amount: amountInKobo,
                     currency: planDetails.currency,
-                    ref: '' + Math.floor((Math.random() * 1000000000) + 1), // Unique transaction reference
+                    ref: '' + Math.floor((Math.random() * 1000000000) + 1),
                     metadata: {
                         plan_id: selectedPlanId,
                         recipient_number: recipientPhoneNumber,
@@ -335,49 +333,44 @@
                         showModal('Transaction Cancelled', 'You have closed the payment window. You can try again.', false);
                     },
                     callback: function(response){
-                        // Payment was successful. Now, submit the data to Formspree.
-                        const finalMessage = `Payment was successful! Your request for ${planDetails.name} has been submitted for phone number ${recipientPhoneNumber}. Please note that data bundle delivery is not instant.`;
-                        showModal('Processing...', 'Payment successful. Submitting form data...', true);
+                        // Payment was successful. Now, call our serverless function to verify.
+                        showModal('Processing...', 'Payment successful. Verifying transaction...', true);
 
-                        const formData = {
-                            "plan_name": planDetails.name,
-                            "plan_price": planDetails.price,
-                            "recipient_number": recipientPhoneNumber,
-                            "buyer_number": buyerPhoneNumber,
-                            "payment_method": paymentMethod,
-                            "paystack_reference": response.reference,
-                            "paystack_status": response.status
+                        const payload = {
+                            reference: response.reference,
+                            plan_details: planDetails,
+                            recipient_number: recipientPhoneNumber,
+                            buyer_number: buyerPhoneNumber,
+                            payment_method: paymentMethod
                         };
 
-                        submitToFormspree(formData, () => {
-                             // This callback runs after Formspree submission
-                             showModal('Transaction Complete', finalMessage, false);
-                        });
+                        verifyPaymentOnServer(payload);
                     }
                 });
                 handler.openIframe();
             }
         });
 
-        async function submitToFormspree(data, callback) {
+        async function verifyPaymentOnServer(payload) {
             try {
-                const response = await fetch(FORMSPREE_URL, {
+                const response = await fetch('/api/verify-payment', {
                     method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-                if (response.ok) {
-                    console.log('Formspree submission successful!');
+
+                const result = await response.json();
+                
+                if (response.ok && result.status === 'success') {
+                    const finalMessage = `Payment was verified and successful! Your request for ${payload.plan_details.name} has been submitted. Please note that data bundle delivery is not instant.`;
+                    showModal('Transaction Complete', finalMessage, false);
                 } else {
-                    console.error('Formspree submission failed:', response.statusText);
+                    const errorMessage = result.message || 'Payment verification failed. Please contact support with your transaction reference.';
+                    showModal('Verification Failed', errorMessage, false);
                 }
             } catch (error) {
-                console.error('Error submitting to Formspree:', error);
-            } finally {
-                if (callback) callback();
+                console.error('Error verifying payment on server:', error);
+                showModal('Error', 'An error occurred during verification. Please contact support.', false);
             }
         }
 
@@ -398,4 +391,3 @@
     </script>
 </body>
 </html>
-

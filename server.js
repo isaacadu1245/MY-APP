@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const axios = require('axios');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
@@ -89,8 +90,11 @@ app.post('/paystack-webhook', (req, res) => {
         if (event.event === 'charge.success') {
             console.log('Payment was successful:', event.data);
             const { reference, metadata } = event.data;
-            const { recipient_number, data_amount } = metadata.custom_fields;
-
+            const customFields = metadata.custom_fields.reduce((acc, field) => {
+                acc[field.variable_name] = field.value;
+                return acc;
+            }, {});
+            const { recipient_number, data_amount } = customFields;
             // Here you would add logic to send the data bundle to the recipient's phone number
             // For example, you might call a third-party API here.
             console.log(`Sending ${data_amount}GB to ${recipient_number} with transaction reference ${reference}`);

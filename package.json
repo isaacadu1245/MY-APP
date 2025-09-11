@@ -1,12 +1,13 @@
 {
-  "name": "bangerhitz-digital-server",
+  "name": "bangerhitz-fullstack",
   "version": "1.0.0",
-  "description": "A server for the Bangerhitz Digital Media web application.",
+  "description": "A full-stack app for Bangerhitz Digital Media.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "dotenv": "^16.4.5"
   }
 }

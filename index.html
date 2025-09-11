@@ -8,8 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Paystack script -->
-    <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -78,15 +76,30 @@
             color: #cbd5e0;
             cursor: pointer;
         }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #f7d100;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-[#1a202c] min-h-screen flex flex-col items-center p-4">
 
-    <!-- Modal for messages and PIN entry -->
+    <!-- Modal for messages -->
     <div id="message-modal" class="modal-overlay hidden">
         <div class="modal">
             <button class="close-button" onclick="closeModal()">×</button>
             <h2 id="modal-title" class="text-2xl font-bold mb-4"></h2>
+            <div id="modal-loader" class="loader hidden my-4"></div>
             <p id="modal-message" class="text-gray-300"></p>
         </div>
     </div>
@@ -160,21 +173,26 @@
                     <p class="text-lg font-semibold text-gray-200">Selected Plan:</p>
                     <p id="selected-plan-text" class="text-yellow-400 font-bold text-xl mt-1"></p>
                 </div>
-                <!-- Updated form for Formspree and Paystack -->
-                <form id="payment-form" action="https://formspree.io/f/xkgvknwg" method="POST" class="space-y-4">
+                <form id="payment-form" class="space-y-4">
+                    <input type="hidden" name="plan" id="form-plan-name">
+                    <input type="hidden" name="price" id="form-plan-price">
                     <div>
                         <label for="recipient-number" class="block text-gray-300">Recipient's Phone Number:</label>
-                        <input type="tel" id="recipient-number" name="recipient_number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
+                        <input type="tel" id="recipient-number" name="recipient-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
                     </div>
                     <div>
                         <label for="buyer-number" class="block text-gray-300">Your Phone Number (for payment):</label>
-                        <input type="tel" id="buyer-number" name="buyer_number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
+                        <input type="tel" id="buyer-number" name="buyer-number" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., 0541234567" required>
                     </div>
                     <div>
-                        <label for="buyer-email" class="block text-gray-300">Your Email (required for Paystack):</label>
-                        <input type="email" id="buyer-email" name="buyer_email" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" placeholder="e.g., your-email@example.com" required>
+                        <label for="payment-method" class="block text-gray-300">Select Payment Method:</label>
+                        <select id="payment-method" name="payment-method" class="w-full mt-1 p-2 rounded-md bg-gray-800 border border-gray-600 text-white" required>
+                            <option value="">-- Choose Method --</option>
+                            <option value="mtn_momo">MTN Mobile Money</option>
+                            <option value="telecel_cash">Telecel Cash</option>
+                            <option value="at_money">AT Money</option>
+                        </select>
                     </div>
-                    <input type="hidden" id="selected-plan-input" name="selected_plan">
                     <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 rounded-xl transition-colors duration-200 shadow-md">Proceed to Payment</button>
                 </form>
             </div>
@@ -207,39 +225,46 @@
         &copy; 2023 Bangerhitz Digital Media. All rights reserved.
     </footer>
 
+    <!-- Paystack script -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
     <script>
         const plans = {
-            'mtn-1gb': { name: 'MTN 1GB', price: 7.00 },
-            'mtn-2gb': { name: 'MTN 2GB', price: 11.00 },
-            'mtn-3gb': { name: 'MTN 3GB', price: 16.00 },
-            'mtn-4gb': { name: 'MTN 4GB', price: 22.00 },
-            'mtn-5gb': { name: 'MTN 5GB', price: 26.00 },
-            'mtn-6gb': { name: 'MTN 6GB', price: 31.00 },
-            'mtn-8gb': { name: 'MTN 8GB', price: 41.00 },
-            'mtn-10gb': { name: 'MTN 10GB', price: 50.00 },
-            'mtn-15gb': { name: 'MTN 15GB', price: 72.00 },
-            'mtn-20gb': { name: 'MTN 20GB', price: 90.00 },
-            'mtn-25gb': { name: 'MTN 25GB', price: 110.00 },
-            'mtn-30gb': { name: 'MTN 30GB', price: 135.00 },
-            'mtn-40gb': { name: 'MTN 40GB', price: 173.00 },
-            'mtn-50gb': { name: 'MTN 50GB', price: 212.00 },
-            'at-1gb': { name: 'AT 1GB', price: 6.00 },
-            'at-2gb': { name: 'AT 2GB', price: 10.00 },
-            'at-3gb': { name: 'AT 3GB', price: 14.00 },
-            'at-4gb': { name: 'AT 4GB', price: 18.00 },
-            'at-5gb': { name: 'AT 5GB', price: 22.00 },
-            'at-6gb': { name: 'AT 6GB', price: 26.00 },
-            'at-8gb': { name: 'AT 8GB', price: 34.00 },
-            'at-10gb': { name: 'AT 10GB', price: 42.00 },
-            'at-12gb': { name: 'AT 12GB', price: 49.00 },
-            'telecel-5gb': { name: 'Telecel 5GB', price: 26.00 },
-            'telecel-10gb': { name: 'Telecel 10GB', price: 46.00 },
-            'telecel-20gb': { name: 'Telecel 20GB', price: 81.00 },
-            'telecel-30gb': { name: 'Telecel 30GB', price: 116.00 },
-            'telecel-40gb': { name: 'Telecel 40GB', price: 156.00 },
+            'mtn-1gb': { name: 'MTN 1GB', price: 7.00, currency: 'GHS' },
+            'mtn-2gb': { name: 'MTN 2GB', price: 11.00, currency: 'GHS' },
+            'mtn-3gb': { name: 'MTN 3GB', price: 16.00, currency: 'GHS' },
+            'mtn-4gb': { name: 'MTN 4GB', price: 22.00, currency: 'GHS' },
+            'mtn-5gb': { name: 'MTN 5GB', price: 26.00, currency: 'GHS' },
+            'mtn-6gb': { name: 'MTN 6GB', price: 31.00, currency: 'GHS' },
+            'mtn-8gb': { name: 'MTN 8GB', price: 41.00, currency: 'GHS' },
+            'mtn-10gb': { name: 'MTN 10GB', price: 50.00, currency: 'GHS' },
+            'mtn-15gb': { name: 'MTN 15GB', price: 72.00, currency: 'GHS' },
+            'mtn-20gb': { name: 'MTN 20GB', price: 90.00, currency: 'GHS' },
+            'mtn-25gb': { name: 'MTN 25GB', price: 110.00, currency: 'GHS' },
+            'mtn-30gb': { name: 'MTN 30GB', price: 135.00, currency: 'GHS' },
+            'mtn-40gb': { name: 'MTN 40GB', price: 173.00, currency: 'GHS' },
+            'mtn-50gb': { name: 'MTN 50GB', price: 212.00, currency: 'GHS' },
+            'at-1gb': { name: 'AT 1GB', price: 6.00, currency: 'GHS' },
+            'at-2gb': { name: 'AT 2GB', price: 10.00, currency: 'GHS' },
+            'at-3gb': { name: 'AT 3GB', price: 14.00, currency: 'GHS' },
+            'at-4gb': { name: 'AT 4GB', price: 18.00, currency: 'GHS' },
+            'at-5gb': { name: 'AT 5GB', price: 22.00, currency: 'GHS' },
+            'at-6gb': { name: 'AT 6GB', price: 26.00, currency: 'GHS' },
+            'at-8gb': { name: 'AT 8GB', price: 34.00, currency: 'GHS' },
+            'at-10gb': { name: 'AT 10GB', price: 42.00, currency: 'GHS' },
+            'at-12gb': { name: 'AT 12GB', price: 49.00, currency: 'GHS' },
+            'telecel-5gb': { name: 'Telecel 5GB', price: 26.00, currency: 'GHS' },
+            'telecel-10gb': { name: 'Telecel 10GB', price: 46.00, currency: 'GHS' },
+            'telecel-20gb': { name: 'Telecel 20GB', price: 81.00, currency: 'GHS' },
+            'telecel-30gb': { name: 'Telecel 30GB', price: 116.00, currency: 'GHS' },
+            'telecel-40gb': { name: 'Telecel 40GB', price: 156.00, currency: 'GHS' },
         };
 
         let selectedPlanId = null;
+        let buyerPhoneNumber = null;
+        let recipientPhoneNumber = null;
+
+        // !!! IMPORTANT: THIS KEY IS PUBLIC AND SAFE TO USE ON THE FRONTEND !!!
+        const PAYSTACK_PUBLIC_KEY = 'pk_live_e0c3ea6685b93e31d4f7f3121413dbf031b20bc1';
 
         document.querySelectorAll('.network-card li').forEach(item => {
             item.addEventListener('click', () => {
@@ -269,73 +294,95 @@
 
                 // Update and show the form
                 const selectedPlanText = document.getElementById('selected-plan-text');
-                selectedPlanText.textContent = `${plans[selectedPlanId].name} for GHC ${plans[selectedPlanId].price.toFixed(2)}`;
+                const planDetails = plans[selectedPlanId];
+                selectedPlanText.textContent = `${planDetails.name} for GHC ${planDetails.price.toFixed(2)}`;
+                document.getElementById('form-plan-name').value = planDetails.name;
+                document.getElementById('form-plan-price').value = planDetails.price;
+
                 document.getElementById('transaction-form').classList.remove('hidden');
-                document.getElementById('selected-plan-input').value = plans[selectedPlanId].name;
                 document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
             });
         });
 
         document.getElementById('payment-form').addEventListener('submit', (event) => {
             event.preventDefault();
-            const buyerEmail = document.getElementById('buyer-email').value;
-            const buyerPhoneNumber = document.getElementById('buyer-number').value;
-            const recipientPhoneNumber = document.getElementById('recipient-number').value;
+            buyerPhoneNumber = document.getElementById('buyer-number').value;
+            recipientPhoneNumber = document.getElementById('recipient-number').value;
+            const paymentMethod = document.getElementById('payment-method').value;
 
-            if (selectedPlanId) {
+            if (selectedPlanId && buyerPhoneNumber && recipientPhoneNumber && paymentMethod) {
                 const planDetails = plans[selectedPlanId];
-                const amountInPesewas = Math.round(planDetails.price * 100);
+                const amountInKobo = planDetails.price * 100;
 
-                // Use Paystack public key here. Do NOT use the API secret.
-                const paystackPublicKey = 'pk_live_e0c3ea6685b93e31d4f7f3121413dbf031b20bc1'; 
-                
-                showModal('Initiating Payment', 'Please wait while we set up the payment...');
-                
-                // This is how you call the Paystack popup.
+                showModal('Processing...', 'Redirecting to payment. Please wait.', true);
+
                 const handler = PaystackPop.setup({
-                    key: paystackPublicKey,
-                    email: buyerEmail,
-                    amount: amountInPesewas,
-                    currency: 'GHS',
-                    ref: '' + Math.floor((Math.random() * 1000000000) + 1), // unique transaction ID
+                    key: PAYSTACK_PUBLIC_KEY,
+                    email: `user+${buyerPhoneNumber}@example.com`,
+                    amount: amountInKobo,
+                    currency: planDetails.currency,
+                    ref: '' + Math.floor((Math.random() * 1000000000) + 1),
                     metadata: {
-                        custom_fields: [
-                            {
-                                display_name: "Recipient Phone Number",
-                                variable_name: "recipient_number",
-                                value: recipientPhoneNumber
-                            },
-                            {
-                                display_name: "Selected Plan",
-                                variable_name: "selected_plan",
-                                value: planDetails.name
-                            }
-                        ]
+                        plan_id: selectedPlanId,
+                        recipient_number: recipientPhoneNumber,
+                        buyer_number: buyerPhoneNumber,
+                        payment_method: paymentMethod
                     },
-                    channels: ['mobile_money'],
-                    // Payment successful callback
-                    callback: function(response){
-                        showModal('Payment Successful!', `Your transaction was successful. Reference: ${response.reference}. Data will be delivered shortly.`);
-                        // Here, you can submit the form to Formspree
-                        const form = document.getElementById('payment-form');
-                        form.action = "https://formspree.io/f/xkgvknwg"; // REMOVE and replace this with your actual Formspree endpoint
-                        form.submit();
-                    },
-                    // Payment closed callback
                     onClose: function(){
-                        showModal('Payment Canceled', 'You have closed the payment prompt.');
+                        closeModal();
+                        showModal('Transaction Cancelled', 'You have closed the payment window. You can try again.', false);
+                    },
+                    callback: function(response){
+                        // Payment was successful. Now, call our serverless function to verify.
+                        showModal('Processing...', 'Payment successful. Verifying transaction...', true);
+
+                        const payload = {
+                            reference: response.reference,
+                            plan_details: planDetails,
+                            recipient_number: recipientPhoneNumber,
+                            buyer_number: buyerPhoneNumber,
+                            payment_method: paymentMethod
+                        };
+
+                        verifyPaymentOnServer(payload);
                     }
                 });
-                
-                // Open the Paystack pop-up
                 handler.openIframe();
             }
         });
 
-        function showModal(title, message) {
+        async function verifyPaymentOnServer(payload) {
+            try {
+                const response = await fetch('/api/verify-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.status === 'success') {
+                    const finalMessage = `Payment was verified and successful! Your request for ${payload.plan_details.name} has been submitted. Please note that data bundle delivery is not instant.`;
+                    showModal('Transaction Complete', finalMessage, false);
+                } else {
+                    const errorMessage = result.message || 'Payment verification failed. Please contact support with your transaction reference.';
+                    showModal('Verification Failed', errorMessage, false);
+                }
+            } catch (error) {
+                console.error('Error verifying payment on server:', error);
+                showModal('Error', 'An error occurred during verification. Please contact support.', false);
+            }
+        }
+
+        function showModal(title, message, showLoader) {
             document.getElementById('modal-title').textContent = title;
             document.getElementById('modal-message').textContent = message;
             document.getElementById('message-modal').classList.remove('hidden');
+            if (showLoader) {
+                document.getElementById('modal-loader').classList.remove('hidden');
+            } else {
+                document.getElementById('modal-loader').classList.add('hidden');
+            }
         }
 
         function closeModal() {

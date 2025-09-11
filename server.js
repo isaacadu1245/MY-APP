@@ -111,3 +111,21 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
+const express = require('express');
+const path = require('path');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Serve static files from the 'public' directory. This is where your index.html should be.
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Set up a route to serve the index.html file directly at the root URL.
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Start the server and listen on the specified port.
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

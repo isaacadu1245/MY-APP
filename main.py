@@ -3,234 +3,96 @@ import json
 import hmac
 import hashlib
 import requests
-from http.server import BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
 
-# --- IMPORTANT CONFIGURATION ---
-# The Paystack and DataMart secret keys should be set as environment variables.
-# You will need to add these in your Vercel or Render dashboard settings.
-# e.g., PAYSTACK_SECRET_KEY, DATAMART_API_KEY, DATAMART_API_URL
-
-# Mapping of Paystack payment amount (in pesewas) to DataMart data capacity (in GB).
-# Adjust these values to match your pricing.
-PAYMENT_TO_DATA_CAPACITY = {
-    700: {'data_amount': '1', 'network': 'MTN', 'planName': 'MTN 1GB'},
-    1400: {'data_amount': '2', 'network': 'MTN', 'planName': 'MTN 2GB'},
-    2800: {'data_amount': '5', 'network': 'MTN', 'planName': 'MTN 5GB'},
-    5500: {'data_amount': '10', 'network': 'MTN', 'planName': 'MTN 10GB'},
-}
-
-
-class handler(BaseHTTPRequestHandler):
+# This function will handle the incoming webhook from Paystack.
+# It's designed to be deployed as a serverless function (e.g., on Vercel or a similar platform).
+def handler(request, response):
     """
-    A unified serverless function handler for both payment initialization
-    and Paystack webhook processing.
+    Handles incoming webhook requests from Paystack.
+
+    This function performs the following steps:
+    1. Validates the request by verifying the signature using the PAYSTACK_SECRET_KEY.
+    2. Parses the JSON payload from the request body.
+    3. Checks if the event type is a successful charge ('charge.success').
+    4. Extracts transaction details from the payload metadata.
+    5. Calls the DataMart API to purchase the data bundle for the user.
+    6. Returns an HTTP 200 status code to acknowledge the webhook.
     """
-    def do_POST(self):
-        """
-        Handles POST requests for both payment initialization and webhooks.
-        """
-        path = urlparse(self.path).path
-        
-        # Determine the action based on the request path
-        if path == '/initialize-payment':
-            self.handle_initialize_payment()
-        elif path == '/paystack-webhook':
-            self.handle_paystack_webhook()
-        else:
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(b"Not Found")
 
-    def handle_initialize_payment(self):
-        """
-        Initializes a payment with Paystack.
-        """
-        try:
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            data = json.loads(post_data)
+    # Retrieve the Paystack secret key from environment variables for security.
+    paystack_secret = os.getenv("PAYSTACK_SECRET_KEY")
+    if not paystack_secret:
+        return {'status': 'error', 'message': 'Paystack secret key not found.'}, 500
 
-            # Retrieve required data from the request body
-            amount = data.get('amount')
-            email = data.get('email')
-            recipientNumber = data.get('recipientNumber')
-            buyerNumber = data.get('buyerNumber')
-            network = data.get('network')
-            dataAmount = data.get('dataAmount')
-            planName = data.get('planName')
-            
-            if not all([amount, email, recipientNumber, buyerNumber, network, dataAmount, planName]):
-                self.send_response(400)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({"message": "Missing required fields"}).encode())
-                return
+    # Retrieve the DataMart API key from environment variables.
+    datamart_api_key = os.getenv("DATAMART_API_KEY")
+    if not datamart_api_key:
+        return {'status': 'error', 'message': 'DataMart API key not found.'}, 500
 
-            paystack_secret_key = os.environ.get('PAYSTACK_SECRET_KEY')
-            if not paystack_secret_key:
-                raise ValueError("PAYSTACK_SECRET_KEY not set")
+    # Read the raw request body and get the signature from the headers.
+    payload = request.get_data()
+    paystack_sig = request.headers.get("x-paystack-signature")
 
-            payload = {
-                "email": email,
-                "amount": amount, # Paystack expects amount in pesewas
-                "metadata": {
-                    "recipientNumber": recipientNumber,
-                    "buyerNumber": buyerNumber,
-                    "network": network,
-                    "dataAmount": dataAmount,
-                    "planName": planName
-                }
-            }
-            
-            headers = {
-                'Authorization': f'Bearer {paystack_secret_key}',
-                'Content-Type': 'application/json'
-            }
+    # 1. Verify the webhook signature to ensure it's from Paystack.
+    computed_signature = hmac.new(
+        paystack_secret.encode('utf-8'),
+        payload,
+        hashlib.sha512
+    ).hexdigest()
 
-            response = requests.post('https://api.paystack.co/transaction/initialize', headers=headers, json=payload)
-            response.raise_for_status()
-            
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(response.content)
+    if computed_signature != paystack_sig:
+        # Signature mismatch, return a 401 Unauthorized error.
+        print("Webhook signature verification failed.")
+        return {'status': 'error', 'message': 'Signature verification failed.'}, 401
 
-        except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({"message": f"An error occurred: {str(e)}"}).encode())
+    # 2. Parse the JSON payload.
+    try:
+        event = json.loads(payload.decode('utf-8'))
+    except json.JSONDecodeError:
+        print("Invalid JSON payload.")
+        return {'status': 'error', 'message': 'Invalid JSON payload.'}, 400
 
-    def handle_paystack_webhook(self):
-        """
-        Handles incoming Paystack webhook requests.
-        """
-        try:
-            # Load environment variables. Raise an error if they are not set.
-            paystack_secret_key = os.environ['PAYSTACK_SECRET_KEY']
-            datamart_api_key = os.environ['DATAMART_API_KEY']
-            datamart_api_url = os.environ['DATAMART_API_URL']
-        except KeyError as e:
-            self.send_response(500)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({"message": f"Internal Server Error: Missing required environment variable: {e}"}).encode())
-            return
-        
-        # Get the raw request body and the signature header
-        content_length = int(self.headers['Content-Length'])
-        request_body = self.rfile.read(content_length)
-        paystack_signature = self.headers.get('x-paystack-signature')
+    # 3. Process only 'charge.success' events.
+    if event.get('event') == 'charge.success':
+        # 4. Extract data from the webhook payload.
+        # This data comes from the metadata field you passed to Paystack.
+        metadata = event.get('data', {}).get('metadata', {})
+        recipient_phone = metadata.get('recipientNumber')
+        data_plan_name = metadata.get('selectedPlanName')
 
-        # Verify the webhook signature for security
-        if not self.verify_paystack_signature(request_body, paystack_signature, paystack_secret_key):
-            print("Webhook signature verification failed.")
-            self.send_response(401)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({"message": "Invalid signature"}).encode())
-            return
+        if not recipient_phone or not data_plan_name:
+            print("Missing recipient phone or data plan in metadata.")
+            return {'status': 'error', 'message': 'Missing required metadata.'}, 400
 
-        # Parse the JSON payload from Paystack
-        payload = json.loads(request_body)
-        
-        event_type = payload.get('event')
+        print(f"Charge successful for {recipient_phone} for plan: {data_plan_name}. Processing data bundle purchase.")
 
-        # We are only interested in successful transactions
-        if event_type == 'charge.success':
-            data = payload.get('data')
-            metadata = data.get('metadata', {})
-            recipient_number = metadata.get('recipientNumber')
-            data_amount = metadata.get('dataAmount')
-            network = metadata.get('network')
+        # 5. Call the DataMart API to purchase the data bundle.
+        # This is where you would integrate with your DataMart provider's API.
+        # Replace the URL and payload with the actual API details.
+        datamart_api_url = "https://api.datamart.com/purchase" # Placeholder URL
 
-            # Ensure we have the necessary data
-            if not all([recipient_number, data_amount, network]):
-                print("Missing data in webhook payload.")
-                self.send_response(400)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({"message": "Bad Request: Missing data"}).encode())
-                return
-            
-            # Purchase the data bundle on DataMart
-            print(f"Attempting to purchase {data_amount}GB for {recipient_number}...")
-            success, message = self.purchase_datamart_data(recipient_number, data_amount, network, datamart_api_key, datamart_api_url)
-            
-            if success:
-                print(f"Successfully purchased {data_amount}GB for {recipient_number}.")
-                self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'status': 'success', 'message': message}).encode())
-            else:
-                print(f"Failed to purchase data: {message}")
-                self.send_response(500)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'message': message}).encode())
-        else:
-            # Acknowledge all other webhook events
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(b'{"status": "ok"}')
-
-        except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({"message": f"Internal Server Error: {str(e)}"}).encode())
-        
-    def verify_paystack_signature(self, body, signature, secret_key):
-        """
-        Verifies that the request is genuinely from Paystack.
-        """
-        # Create a HMAC-SHA512 signature using the secret key and request body
-        hashed = hmac.new(
-            key=secret_key.encode('utf-8'),
-            msg=body,
-            digestmod=hashlib.sha512
-        ).hexdigest()
-        
-        return hmac.compare_digest(hashed, signature)
-
-    def purchase_datamart_data(self, phone_number, capacity, network, api_key, api_url):
-        """
-        Makes a POST request to the DataMart API to buy a data bundle.
-        """
-        headers = {
-            'Content-Type': 'application/json',
-            'X-API-Key': api_key
-        }
-
-        payload = {
-            "phoneNumber": phone_number,
-            "network": network,
-            "capacity": capacity,
-            "gateway": "wallet"
+        api_payload = {
+            "api_key": datamart_api_key,
+            "recipient_phone": recipient_phone,
+            "data_plan_name": data_plan_name
+            # Include any other necessary parameters for the DataMart API.
         }
 
         try:
-            response = requests.post(api_url, headers=headers, json=payload, timeout=10)
-            response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
-            response_data = response.json()
-            
-            if response_data.get('status') == 'success':
-                return True, "Data bundle purchased successfully."
-            else:
-                return False, response_data.get('message', 'Unknown error from DataMart API.')
-                
+            # Send the request to the DataMart API.
+            api_response = requests.post(datamart_api_url, json=api_payload)
+            api_response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+
+            print(f"DataMart API response: {api_response.status_code}")
+            return {'status': 'success', 'message': 'Data bundle purchased successfully.'}, 200
+
         except requests.exceptions.RequestException as e:
-            return False, f"Failed to connect to DataMart API: {e}"
+            print(f"Failed to call DataMart API: {e}")
+            return {'status': 'error', 'message': f'DataMart API call failed: {e}'}, 500
 
-    def do_GET(self):
-        """
-        Handles GET requests to return a basic status.
-        """
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(b'{"status": "API is running"}')
+    else:
+        # Ignore other webhook events.
+        print(f"Ignoring event type: {event.get('event')}")
+        return {'status': 'ignored', 'message': 'Event type ignored.'}, 200
 
+    return {'status': 'ok', 'message': 'Request received and processed.'}, 200

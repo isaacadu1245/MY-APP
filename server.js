@@ -1,21 +1,40 @@
 const express = require('express');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const dotenv = require('dotenv');
 
 dotenv.config(); // Load environment variables from .env file
 
 const app = express();
 
-// Middleware to parse JSON bodies
-app.use(express.json());
+// Middleware to parse JSON bodies. Paystack webhook needs the raw body
+// for signature verification, so we save it on the request object.
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    }
+}));
 
-// Load environment variables.
+// Load environment variables. Raise an error if they are not set.
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const DATAMART_API_KEY = process.env.DATAMART_API_KEY;
 const DATAMART_API_URL = process.env.DATAMART_API_URL;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_EMAIL_PASSWORD = process.env.ADMIN_EMAIL_PASSWORD;
+
+if (!PAYSTACK_SECRET_KEY || !DATAMART_API_KEY || !DATAMART_API_URL || !ADMIN_EMAIL || !ADMIN_EMAIL_PASSWORD) {
+    console.error('ERROR: Missing one or more required environment variables.');
+    process.exit(1);
+}
+
+// --- Network Mapping ---
+// The frontend uses simple names, but the DataMart API might need specific ones.
+const networkMap = {
+    'mtn_momo': 'MTN',
+    'telecel_cash': 'Telecel',
+    'at_money': 'AT'
+};
 
 // --- Email Transporter Configuration ---
 const transporter = nodemailer.createTransport({
@@ -72,7 +91,7 @@ async function sendNotificationEmail(toEmail, subject, text) {
     }
 }
 
-// --- Paystack Initialization Endpoint ---
+// --- Paystack Initialization Endpoint (Client-side Call) ---
 app.post('/initialize-payment', async (req, res) => {
     try {
         const { amount, email, planName, recipientNumber, buyerNumber, network, dataAmount } = req.body;
@@ -109,47 +128,59 @@ app.post('/initialize-payment', async (req, res) => {
     }
 });
 
-// --- Paystack Verification Endpoint ---
-app.get('/verify-payment/:reference', async (req, res) => {
-    try {
-        const { reference } = req.params;
+// --- Paystack Webhook Endpoint (Server-to-Server Call) ---
+// This is the secure, recommended way to verify payments.
+app.post('/paystack-webhook', async (req, res) => {
+    // Verify the webhook signature for security
+    const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(req.rawBody).digest('hex');
+    const paystackSignature = req.headers['x-paystack-signature'];
 
-        const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
-            headers: {
-                'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-                'Content-Type': 'application/json'
-            }
-        });
+    if (hash !== paystackSignature) {
+        console.error('Webhook signature verification failed.');
+        return res.status(400).send('Invalid signature');
+    }
 
-        const data = response.data.data;
-        if (data.status === 'success') {
-            const { recipientNumber, planName, network, dataAmount } = data.metadata;
-            const amountInCedi = data.amount / 100;
+    const payload = req.body;
+    const eventType = payload.event;
 
-            // Step 1: Send the data bundle
-            const dataDeliveryResult = await sendDataBundle(recipientNumber, dataAmount, network);
+    // We only care about successful charges
+    if (eventType === 'charge.success') {
+        const data = payload.data;
+        const { recipientNumber, planName, network, dataAmount } = data.metadata;
+        const amountInCedi = data.amount / 100;
+        const paystackReference = data.reference;
 
-            // Step 2: Send a notification email to the admin
-            const emailSubject = `New Data Purchase: ${planName} to ${recipientNumber}`;
-            const emailText = `A new data bundle has been purchased.\n\n`
-                + `Plan: ${planName}\n`
-                + `Amount: GHC ${amountInCedi}\n`
-                + `Recipient Number: ${recipientNumber}\n`
-                + `Buyer's Number: ${data.metadata.buyerNumber}\n`
-                + `Network: ${network}\n`
-                + `Paystack Reference: ${reference}\n`
-                + `DataMart Delivery Status: ${dataDeliveryResult.message}`;
-            
-            await sendNotificationEmail(ADMIN_EMAIL, emailSubject, emailText);
-
-            // Respond to the client
-            res.status(200).json({ message: 'Payment verified, and transaction processed.', deliveryStatus: dataDeliveryResult.message });
-        } else {
-            res.status(400).json({ message: 'Payment verification failed.' });
+        // Ensure we have the required metadata
+        if (!recipientNumber || !planName || !network || !dataAmount) {
+            console.error('Required metadata missing from webhook payload.');
+            return res.status(400).send('Bad Request: Missing metadata');
         }
-    } catch (error) {
-        console.error('Error verifying payment:', error.response?.data || error.message);
-        res.status(500).json({ message: 'An error occurred while verifying payment.' });
+
+        // Map the network name to the format the DataMart API expects
+        const apiNetwork = networkMap[network] || 'MTN'; // Default to MTN if not found
+
+        // Step 1: Send the data bundle
+        const dataDeliveryResult = await sendDataBundle(recipientNumber, dataAmount, apiNetwork);
+
+        // Step 2: Send a notification email to the admin
+        const emailSubject = `New Data Purchase: ${planName} to ${recipientNumber}`;
+        const emailText = `A new data bundle has been purchased.\n\n`
+            + `Plan: ${planName}\n`
+            + `Amount: GHC ${amountInCedi}\n`
+            + `Recipient Number: ${recipientNumber}\n`
+            + `Buyer's Number: ${data.metadata.buyerNumber}\n`
+            + `Network: ${apiNetwork}\n`
+            + `Paystack Reference: ${paystackReference}\n`
+            + `DataMart Delivery Status: ${dataDeliveryResult.message}`;
+        
+        await sendNotificationEmail(ADMIN_EMAIL, emailSubject, emailText);
+
+        // Acknowledge receipt of the webhook
+        res.status(200).send('Webhook received and processed.');
+
+    } else {
+        // Acknowledge other events without processing
+        res.status(200).send('Event received, but not handled.');
     }
 });
 

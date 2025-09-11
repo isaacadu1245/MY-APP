@@ -1,98 +1,77 @@
-// Import required modules
 const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 const path = require('path');
-const https = require('https');
+const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware to parse JSON bodies
-app.use(express.json());
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve static files from the root directory
-// This will serve your index.html file
-app.use(express.static(path.join(__dirname)));
+// Serve the index.html file for the root URL
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-// API endpoint to verify a Paystack transaction
+// Secure endpoint to verify Paystack payment
 app.post('/verify-payment', async (req, res) => {
-    const { reference, planDetails, recipientPhoneNumber } = req.body;
+    const { reference, planDetails, recipientNumber, buyerNumber, paymentMethod } = req.body;
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+    const formspreeUrl = process.env.FORMSPREE_URL;
 
-    if (!reference) {
-        return res.status(400).json({ status: 'error', message: 'No transaction reference provided.' });
+    if (!paystackSecretKey || !formspreeUrl) {
+        return res.status(500).json({ status: 'error', message: 'Server is not configured correctly. Missing environment variables.' });
     }
 
     try {
-        const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
-        if (!paystackSecretKey) {
-            console.error('PAYSTACK_SECRET_KEY is not set in environment variables.');
-            return res.status(500).json({ status: 'error', message: 'Server configuration error.' });
-        }
-
-        const options = {
-            hostname: 'api.paystack.co',
-            port: 443,
-            path: `/transaction/verify/${encodeURIComponent(reference)}`,
-            method: 'GET',
+        // Step 1: Verify the payment with Paystack
+        const verificationResponse = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
             headers: {
-                Authorization: `Bearer ${paystackSecretKey}`,
-                'Content-Type': 'application/json'
+                Authorization: `Bearer ${paystackSecretKey}`
             }
-        };
-
-        const paystackReq = https.request(options, paystackRes => {
-            let data = '';
-
-            paystackRes.on('data', chunk => {
-                data += chunk;
-            });
-
-            paystackRes.on('end', async () => {
-                const paystackResponse = JSON.parse(data);
-
-                if (paystackResponse.data && paystackResponse.data.status === 'success') {
-                    // Payment is verified. Now send details to Formspree.
-                    const formspreeUrl = process.env.FORMSPREE_URL;
-                    const formData = {
-                        'plan-name': planDetails.name,
-                        'plan-price': planDetails.price,
-                        'recipient-number': recipientPhoneNumber,
-                        'transaction-reference': reference,
-                        'status': 'Payment Verified and Confirmed'
-                    };
-
-                    const formspreeRes = await fetch(formspreeUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(formData)
-                    });
-
-                    if (formspreeRes.ok) {
-                        return res.status(200).json({ status: 'success', message: 'Payment verified and data submitted to Formspree.' });
-                    } else {
-                        return res.status(500).json({ status: 'error', message: 'Failed to submit data to Formspree.' });
-                    }
-                } else {
-                    return res.status(400).json({ status: 'error', message: 'Payment verification failed.' });
-                }
-            });
         });
 
-        paystackReq.on('error', e => {
-            console.error(e);
-            res.status(500).json({ status: 'error', message: 'Internal server error during verification.' });
-        });
+        const paystackData = verificationResponse.data;
 
-        paystackReq.end();
+        if (paystackData.status && paystackData.data.status === 'success') {
+            // Step 2: If verification is successful, submit to Formspree
+            const formData = {
+                plan: planDetails.name,
+                price: planDetails.price,
+                recipient_number: recipientNumber,
+                buyer_number: buyerNumber,
+                payment_method: paymentMethod,
+                transaction_reference: reference
+            };
+
+            await axios.post(formspreeUrl, formData, {
+                headers: { 'Accept': 'application/json' }
+            });
+
+            console.log(`Payment confirmed and data submitted for reference: ${reference}`);
+            return res.status(200).json({ status: 'success', message: 'Payment confirmed and data submitted.' });
+        } else {
+            // Payment verification failed
+            console.log(`Payment verification failed for reference: ${reference}`);
+            return res.status(400).json({ status: 'error', message: 'Payment verification failed.' });
+        }
     } catch (error) {
-        console.error('Server error:', error);
-        res.status(500).json({ status: 'error', message: 'Server error.' });
+        console.error('Error in payment verification:', error.response ? error.response.data : error.message);
+        return res.status(500).json({ status: 'error', message: 'An internal server error occurred.' });
     }
 });
 
-// Start the server
+// For any other GET request, send the index.html file as well
+// This is a catch-all to prevent 404 errors for things like sub-routes in single-page apps
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });

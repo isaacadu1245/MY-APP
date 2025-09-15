@@ -1,23 +1,18 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/ussd.php",
-      "use": "@php/php-cgi"
+  "functions": {
+    "ussd.php": {
+      "runtime": "vercel-php@0.7.4"
     }
-  ],
+  },
   "routes": [
     {
-      "src": "/api/ussd.php",
-      "dest": "api/ussd.php"
+      "src": "/ussd.php",
+      "dest": "/ussd.php"
     },
     {
       "src": "/(.*)",
-      "dest": "/server.js"
+      "dest": "/index.html"
     }
   ]
 }

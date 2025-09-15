@@ -3,7 +3,7 @@
 // Function to send a POST request to the Formspree endpoint
 function sendToFormspree($data) {
     // Replace this with your actual Formspree endpoint URL
-    $url = 'YOUR_FORMSPREE_ENDPOINT_URL';
+    $url = 'https://formspree.io/f/xkgvknwg';
     $options = array(
         'http' => array(
             'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
@@ -163,7 +163,7 @@ if ($text == "") {
     sendToFormspree($dataToSend);
 
     // This is a terminal request. The USSD session ends here.
-    $response = "END Thank you! Please pay {$plan['cost']} for your {$plan['name']} bundle by sending a Mobile Money transfer to Bangerhitz Digital Media on 0205306718. Your request will be fulfilled after payment confirmation.";
+    $response = "END Thank you! Please pay {$plan['cost']} for your {$plan['name']} bundle by sending a Mobile Money transfer to Bangerhitz Digital Media on 0205306718.\n\nIMPORTANT NOTICE:\nData bundle delivery is not instant. No refunds for wrong transactions or numbers. Please verify your number carefully before making a purchase.";
 
 } else {
     $response = "END Invalid input. Please try again.";

@@ -24,6 +24,20 @@ app.get('/', (req, res) => {
 app.post('/verify-payment', async (req, res) => {
     const { reference } = req.body;
 
+    // Check for required environment variables
+    const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+    const formspreeUrl = process.env.FORMSPREE_URL;
+
+    if (!paystackSecretKey) {
+        console.error('PAYSTACK_SECRET_KEY is not set in environment variables.');
+        return res.status(500).json({ status: 'error', message: 'Server configuration error: Paystack key is missing.' });
+    }
+
+    if (!formspreeUrl) {
+        console.error('FORMSPREE_URL is not set in environment variables.');
+        return res.status(500).json({ status: 'error', message: 'Server configuration error: Formspree URL is missing.' });
+    }
+
     if (!reference) {
         return res.status(400).json({ status: 'error', message: 'Payment reference is missing.' });
     }
@@ -34,7 +48,7 @@ app.post('/verify-payment', async (req, res) => {
     try {
         const paystackResponse = await axios.get(paystackUrl, {
             headers: {
-                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+                Authorization: `Bearer ${paystackSecretKey}`,
             },
         });
 
@@ -42,14 +56,6 @@ app.post('/verify-payment', async (req, res) => {
 
         // Check if the Paystack transaction was successful
         if (paystackData.status && paystackData.data.status === 'success') {
-            // Transaction is verified, now submit to Formspree
-            const formspreeUrl = process.env.FORMSPREE_URL;
-
-            if (!formspreeUrl) {
-                console.error('FORMSPREE_URL environment variable is not set.');
-                return res.status(500).json({ status: 'error', message: 'Server configuration error.' });
-            }
-
             try {
                 // Prepare form data for Formspree
                 const formData = {

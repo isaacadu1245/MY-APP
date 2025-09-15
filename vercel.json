@@ -1,14 +1,13 @@
 {
-  "version": 2,
   "functions": {
-    "ussd.php": {
+    "api/ussd.php": {
       "runtime": "vercel-php@0.7.4"
     }
   },
   "routes": [
     {
-      "src": "/ussd.php",
-      "dest": "/ussd.php"
+      "src": "/api/ussd.php",
+      "dest": "/api/ussd.php"
     },
     {
       "src": "/(.*)",
